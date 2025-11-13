@@ -14,19 +14,24 @@ define('TKMTB_DIR', plugin_dir_path(__FILE__));
 define('TKMTB_URL', plugin_dir_url(__FILE__));
 
 // Check parent plugin - compatible with all versions
-// Runs after all plugins are loaded to ensure functions are available
-add_action('plugins_loaded', 'tkmtb_check_parent', 20);
+// Runs at init to ensure post types are registered (parent plugin registers at init priority 0)
+add_action('init', 'tkmtb_check_parent', 11);
 function tkmtb_check_parent() {
     // Check if teacher_document post type exists
     if (!post_type_exists('teacher_document')) {
         add_action('admin_notices', function() {
             echo '<div class="notice notice-error"><p><strong>Table Builder</strong> requires <strong>TeachersKE File Manager</strong> plugin to be active.</p></div>';
         });
-        // Don't deactivate - just show warning
         return;
     }
-    
-    // Everything is fine - plugin is compatible
+
+    // Check if critical functions exist
+    if (!function_exists('tkm_get_levels') || !function_exists('tkm_get_subjects_for_level')) {
+        add_action('admin_notices', function() {
+            echo '<div class="notice notice-warning"><p><strong>Table Builder</strong> detected an incompatible version of <strong>TeachersKE File Manager</strong>. Please update to the latest version.</p></div>';
+        });
+        return;
+    }
 }
 
 // Include files
@@ -38,16 +43,42 @@ require_once TKMTB_DIR . 'admin/settings.php';
 require_once TKMTB_DIR . 'admin/tables-list.php';
 
 // Compatibility functions - only load if not already defined by File Manager
-add_action('plugins_loaded', 'tkmtb_load_compatibility', 30);
+// These should NEVER be needed if parent plugin is active, but provide fallbacks just in case
+add_action('init', 'tkmtb_load_compatibility', 12);
 function tkmtb_load_compatibility() {
-    // Load tkm_get_levels if not available
+    // Load tkm_get_levels if not available (MUST match parent plugin structure exactly)
     if (!function_exists('tkm_get_levels')) {
         function tkm_get_levels() {
             return array(
-                'early_years' => array('label' => 'Early Years', 'grades' => array('PP1', 'PP2')),
-                'primary' => array('label' => 'Primary', 'grades' => array('Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6', 'Grade 7', 'Grade 8')),
-                'secondary' => array('label' => 'Secondary', 'grades' => array('Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'))
+                'early_years' => array(
+                    'label' => 'Early Years / Pre-Primary',
+                    'grades' => array('Playgroup', 'PP1', 'PP2')
+                ),
+                'lower_primary' => array(
+                    'label' => 'Lower Primary',
+                    'grades' => array('Grade 1', 'Grade 2', 'Grade 3')
+                ),
+                'upper_primary' => array(
+                    'label' => 'Upper Primary',
+                    'grades' => array('Grade 4', 'Grade 5', 'Grade 6')
+                ),
+                'junior_secondary' => array(
+                    'label' => 'Junior Secondary',
+                    'grades' => array('Grade 7', 'Grade 8', 'Grade 9')
+                ),
+                'senior_secondary' => array(
+                    'label' => 'Senior Secondary',
+                    'grades' => array('Grade 10', 'Grade 11', 'Grade 12')
+                )
             );
+        }
+    }
+
+    // Load tkm_get_subjects_for_level if not available
+    if (!function_exists('tkm_get_subjects_for_level')) {
+        function tkm_get_subjects_for_level($level) {
+            $subjects = get_option('tkm_subjects_by_level', array());
+            return isset($subjects[$level]) ? $subjects[$level] : array();
         }
     }
 
@@ -58,7 +89,7 @@ function tkmtb_load_compatibility() {
                 $img = get_the_post_thumbnail_url($post_id, $size);
                 if ($img) return $img;
             }
-            // Fallback placeholder
+            // Fallback placeholder (matches theme colors)
             return 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="60" height="60"%3E%3Crect fill="%23e0d4ed" width="60" height="60"/%3E%3Ctext x="50%25" y="50%25" font-size="24" fill="%23b8a5c9" text-anchor="middle" dy=".3em"%3E📄%3C/text%3E%3C/svg%3E';
         }
     }
@@ -89,6 +120,21 @@ function tkmtb_admin_assets($hook) {
     wp_enqueue_script('wp-color-picker');
     wp_enqueue_style('tkmtb-admin', TKMTB_URL . 'assets/css/admin.css', array(), TKMTB_VERSION);
     wp_enqueue_script('tkmtb-admin', TKMTB_URL . 'assets/js/admin.js', array('jquery', 'wp-color-picker'), TKMTB_VERSION, true);
+
+    // Pass level/grade/subject data to JavaScript for dynamic dropdowns
+    if (function_exists('tkm_get_levels')) {
+        $levels_data = tkm_get_levels();
+        $subjects_data = array();
+
+        foreach ($levels_data as $key => $level) {
+            $subjects_data[$key] = tkm_get_subjects_for_level($key);
+        }
+
+        wp_localize_script('tkmtb-admin', 'tkmtbLevels', array(
+            'levels' => $levels_data,
+            'subjects' => $subjects_data
+        ));
+    }
 }
 
 // Enqueue frontend assets

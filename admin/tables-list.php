@@ -38,9 +38,20 @@ function tkmtb_tables_page() {
                     </tr>
                 </thead>
                 <tbody>
-                    <?php foreach ($tables as $table): 
-                        $filters = maybe_unserialize($table['filters']);
+                    <?php foreach ($tables as $table):
+                        $prefilters = maybe_unserialize($table['prefilters']);
                         $columns = maybe_unserialize($table['columns']);
+
+                        // For backward compatibility, check for old 'filters' column
+                        if (!is_array($prefilters) || empty($prefilters)) {
+                            $prefilters = array(
+                                'levels' => array(),
+                                'grades' => array(),
+                                'subjects' => array(),
+                                'categories' => array(),
+                                'versions' => array()
+                            );
+                        }
                     ?>
                     <tr>
                         <td><strong>#<?php echo esc_html($table['id']); ?></strong></td>
@@ -52,14 +63,19 @@ function tkmtb_tables_page() {
                             <button type="button" class="button button-small" onclick="navigator.clipboard.writeText(this.previousElementSibling.value);alert('Shortcode copied!');" style="margin-top:5px">📋 Copy</button>
                         </td>
                         <td>
-                            <?php 
-                            $filter_list = array();
-                            if (!empty($filters['grade'])) $filter_list[] = 'Grade';
-                            if (!empty($filters['subject'])) $filter_list[] = 'Subject';
-                            if (!empty($filters['level'])) $filter_list[] = 'Level';
-                            if (!empty($filters['category'])) $filter_list[] = 'Category';
-                            if (!empty($filters['version'])) $filter_list[] = 'Version';
-                            echo !empty($filter_list) ? esc_html(implode(', ', $filter_list)) : '<em>No filters</em>';
+                            <?php
+                            $filter_summary = array();
+                            if (!empty($prefilters['levels'])) $filter_summary[] = count($prefilters['levels']) . ' Level(s)';
+                            if (!empty($prefilters['grades'])) $filter_summary[] = count($prefilters['grades']) . ' Grade(s)';
+                            if (!empty($prefilters['subjects'])) $filter_summary[] = count($prefilters['subjects']) . ' Subject(s)';
+                            if (!empty($prefilters['categories'])) $filter_summary[] = count($prefilters['categories']) . ' Category(s)';
+                            if (!empty($prefilters['versions'])) $filter_summary[] = count($prefilters['versions']) . ' Version(s)';
+
+                            if (!empty($filter_summary)) {
+                                echo '<small>' . esc_html(implode(', ', $filter_summary)) . '</small>';
+                            } else {
+                                echo '<em style="color:#999">No filters</em>';
+                            }
                             ?>
                         </td>
                         <td><?php echo is_array($columns) ? count($columns) . ' columns' : 'Default'; ?></td>
@@ -94,11 +110,19 @@ function tkmtb_new_table_page() {
     $table_data = array(
         'id' => 0,
         'name' => '',
-        'filters' => array(),
+        'prefilters' => array(
+            'levels' => array(),
+            'grades' => array(),
+            'subjects' => array(),
+            'categories' => array(),
+            'versions' => array()
+        ),
         'columns' => tkmtb_get_setting('default_columns', array()),
-        'settings' => array()
+        'settings' => array(
+            'show_title' => 'no'
+        )
     );
-    
+
     // Load existing table if editing
     if (isset($_GET['edit']) && $_GET['edit'] > 0) {
         $existing = tkmtb_get_table($_GET['edit']);
@@ -110,26 +134,54 @@ function tkmtb_new_table_page() {
     
     // Save table
     if (isset($_POST['tkmtb_save_table']) && check_admin_referer('tkmtb_save_table')) {
-        $save_data = array(
-            'id' => isset($_POST['table_id']) ? intval($_POST['table_id']) : 0,
-            'name' => sanitize_text_field($_POST['table_name']),
-            'filters' => array(
-                'grade' => isset($_POST['filter_grade']),
-                'subject' => isset($_POST['filter_subject']),
-                'level' => isset($_POST['filter_level']),
-                'category' => isset($_POST['filter_category']),
-                'version' => isset($_POST['filter_version'])
-            ),
-            'columns' => isset($_POST['columns']) ? array_map('sanitize_text_field', $_POST['columns']) : array(),
-            'settings' => array()
+        // Collect prefilters
+        $prefilters = array(
+            'levels' => isset($_POST['prefilter_levels']) && is_array($_POST['prefilter_levels'])
+                ? array_map('sanitize_text_field', $_POST['prefilter_levels'])
+                : array(),
+            'grades' => isset($_POST['prefilter_grades']) && is_array($_POST['prefilter_grades'])
+                ? array_map('sanitize_text_field', $_POST['prefilter_grades'])
+                : array(),
+            'subjects' => isset($_POST['prefilter_subjects']) && is_array($_POST['prefilter_subjects'])
+                ? array_map('sanitize_text_field', $_POST['prefilter_subjects'])
+                : array(),
+            'categories' => isset($_POST['prefilter_categories']) && is_array($_POST['prefilter_categories'])
+                ? array_map('sanitize_text_field', $_POST['prefilter_categories'])
+                : array(),
+            'versions' => isset($_POST['prefilter_versions']) && is_array($_POST['prefilter_versions'])
+                ? array_map('sanitize_text_field', $_POST['prefilter_versions'])
+                : array()
         );
-        
-        $saved_id = tkmtb_save_table($save_data);
-        
-        echo '<div class="notice notice-success"><p><strong>✅ Table saved!</strong> Shortcode: <code>[tkm_table id="' . $saved_id . '"]</code></p></div>';
-        
-        $table_data = tkmtb_get_table($saved_id);
-        $editing = true;
+
+        // Validate: At least one filter value must be selected
+        $has_filter = false;
+        foreach ($prefilters as $values) {
+            if (!empty($values)) {
+                $has_filter = true;
+                break;
+            }
+        }
+
+        if (!$has_filter) {
+            echo '<div class="notice notice-error"><p><strong>❌ Error:</strong> Please select at least one filter value (Level, Grade, Subject, Category, or Version).</p></div>';
+        } else {
+            $save_data = array(
+                'id' => isset($_POST['table_id']) ? intval($_POST['table_id']) : 0,
+                'name' => sanitize_text_field($_POST['table_name']),
+                'prefilters' => $prefilters,
+                'columns' => isset($_POST['columns']) ? array_map('sanitize_text_field', $_POST['columns']) : array(),
+                'settings' => array(
+                    'show_title' => isset($_POST['show_title']) ? 'yes' : 'no'
+                )
+            );
+
+            $saved_id = tkmtb_save_table($save_data);
+
+            echo '<div class="notice notice-success"><p><strong>✅ Table saved!</strong> Shortcode: <code>[tkm_table id="' . $saved_id . '"]</code></p></div>';
+
+            $table_data = tkmtb_get_table($saved_id);
+            $editing = true;
+        }
     }
     
     $all_columns = array(
@@ -165,16 +217,186 @@ function tkmtb_new_table_page() {
                 </tr>
                 
                 <tr>
-                    <th colspan="2"><h2>🔍 Enable Filters</h2></th>
+                    <th colspan="2"><h2>🔍 Pre-Filter Documents</h2></th>
                 </tr>
                 <tr>
                     <td colspan="2">
-                        <label><input type="checkbox" name="filter_grade" value="1" <?php checked(!empty($table_data['filters']['grade'])); ?>> <strong>Grade Filter</strong> (PP1, PP2, Grade 1, etc.)</label><br>
-                        <label><input type="checkbox" name="filter_subject" value="1" <?php checked(!empty($table_data['filters']['subject'])); ?>> <strong>Subject Filter</strong> (Mathematics, English, etc.)</label><br>
-                        <label><input type="checkbox" name="filter_level" value="1" <?php checked(!empty($table_data['filters']['level'])); ?>> <strong>Level Filter</strong> (Early Years, Primary, Secondary)</label><br>
-                        <label><input type="checkbox" name="filter_category" value="1" <?php checked(!empty($table_data['filters']['category'])); ?>> <strong>Category Filter</strong> (Schemes, Notes, etc.)</label><br>
-                        <label><input type="checkbox" name="filter_version" value="1" <?php checked(!empty($table_data['filters']['version'])); ?>> <strong>Version Filter</strong> (2025 Edition, etc.)</label>
-                        <p class="description">Selected filters will show as dropdowns above the table</p>
+                        <p class="description" style="margin-top:0;background:#fff3cd;padding:10px;border-left:4px solid #ffc107">
+                            <strong>⚠️ Required:</strong> Select at least one filter value below. The table will show ONLY documents matching your selections.
+                        </p>
+                    </td>
+                </tr>
+
+                <?php
+                // Get data for dropdowns
+                $levels = tkm_get_levels();
+                $all_categories = get_terms(array('taxonomy' => 'file_category', 'hide_empty' => false));
+                $all_versions = tkmtb_get_unique_meta('_tkm_version');
+
+                // Get selected levels for grade/subject population
+                $selected_levels = !empty($table_data['prefilters']['levels']) ? $table_data['prefilters']['levels'] : array();
+                ?>
+
+                <tr>
+                    <th scope="row">
+                        <label for="prefilter_levels">Education Level</label>
+                    </th>
+                    <td>
+                        <select name="prefilter_levels[]" id="prefilter_levels" multiple size="5" style="width:100%;max-width:500px">
+                            <?php foreach ($levels as $key => $data): ?>
+                                <option value="<?php echo esc_attr($key); ?>" <?php selected(in_array($key, $selected_levels)); ?>>
+                                    <?php echo esc_html($data['label']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                        <p class="description">Hold Ctrl (Windows) or Cmd (Mac) to select multiple levels</p>
+                    </td>
+                </tr>
+
+                <tr>
+                    <th scope="row">
+                        <label for="prefilter_grades">Grade</label>
+                    </th>
+                    <td>
+                        <select name="prefilter_grades[]" id="prefilter_grades" multiple size="8" style="width:100%;max-width:500px">
+                            <?php
+                            // Populate grades based on selected levels
+                            $selected_grades = !empty($table_data['prefilters']['grades']) ? $table_data['prefilters']['grades'] : array();
+                            $grades_shown = array();
+
+                            if (!empty($selected_levels)) {
+                                foreach ($selected_levels as $level) {
+                                    if (isset($levels[$level]['grades'])) {
+                                        foreach ($levels[$level]['grades'] as $grade) {
+                                            if (!in_array($grade, $grades_shown)) {
+                                                $grades_shown[] = $grade;
+                                                ?>
+                                                <option value="<?php echo esc_attr($grade); ?>" <?php selected(in_array($grade, $selected_grades)); ?>>
+                                                    <?php echo esc_html($grade); ?>
+                                                </option>
+                                                <?php
+                                            }
+                                        }
+                                    }
+                                }
+                            } else {
+                                // Show all grades if no level selected
+                                foreach ($levels as $level_data) {
+                                    foreach ($level_data['grades'] as $grade) {
+                                        if (!in_array($grade, $grades_shown)) {
+                                            $grades_shown[] = $grade;
+                                            ?>
+                                            <option value="<?php echo esc_attr($grade); ?>" <?php selected(in_array($grade, $selected_grades)); ?>>
+                                                <?php echo esc_html($grade); ?>
+                                            </option>
+                                            <?php
+                                        }
+                                    }
+                                }
+                            }
+                            ?>
+                        </select>
+                        <p class="description">Hold Ctrl (Windows) or Cmd (Mac) to select multiple grades. Changes dynamically based on selected level.</p>
+                    </td>
+                </tr>
+
+                <tr>
+                    <th scope="row">
+                        <label for="prefilter_subjects">Subject</label>
+                    </th>
+                    <td>
+                        <select name="prefilter_subjects[]" id="prefilter_subjects" multiple size="8" style="width:100%;max-width:500px">
+                            <?php
+                            // Populate subjects based on selected levels
+                            $selected_subjects = !empty($table_data['prefilters']['subjects']) ? $table_data['prefilters']['subjects'] : array();
+                            $subjects_shown = array();
+
+                            if (!empty($selected_levels)) {
+                                foreach ($selected_levels as $level) {
+                                    $level_subjects = tkm_get_subjects_for_level($level);
+                                    foreach ($level_subjects as $subject) {
+                                        if (!in_array($subject, $subjects_shown)) {
+                                            $subjects_shown[] = $subject;
+                                            ?>
+                                            <option value="<?php echo esc_attr($subject); ?>" <?php selected(in_array($subject, $selected_subjects)); ?>>
+                                                <?php echo esc_html($subject); ?>
+                                            </option>
+                                            <?php
+                                        }
+                                    }
+                                }
+                            } else {
+                                // Show all subjects if no level selected
+                                foreach ($levels as $key => $level_data) {
+                                    $level_subjects = tkm_get_subjects_for_level($key);
+                                    foreach ($level_subjects as $subject) {
+                                        if (!in_array($subject, $subjects_shown)) {
+                                            $subjects_shown[] = $subject;
+                                            ?>
+                                            <option value="<?php echo esc_attr($subject); ?>" <?php selected(in_array($subject, $selected_subjects)); ?>>
+                                                <?php echo esc_html($subject); ?>
+                                            </option>
+                                            <?php
+                                        }
+                                    }
+                                }
+                            }
+                            ?>
+                        </select>
+                        <p class="description">Hold Ctrl (Windows) or Cmd (Mac) to select multiple subjects. Changes dynamically based on selected level.</p>
+                    </td>
+                </tr>
+
+                <tr>
+                    <th scope="row">
+                        <label for="prefilter_categories">Category</label>
+                    </th>
+                    <td>
+                        <select name="prefilter_categories[]" id="prefilter_categories" multiple size="6" style="width:100%;max-width:500px">
+                            <?php
+                            $selected_categories = !empty($table_data['prefilters']['categories']) ? $table_data['prefilters']['categories'] : array();
+                            if (!empty($all_categories) && !is_wp_error($all_categories)):
+                                foreach ($all_categories as $cat): ?>
+                                    <option value="<?php echo esc_attr($cat->slug); ?>" <?php selected(in_array($cat->slug, $selected_categories)); ?>>
+                                        <?php echo esc_html($cat->name); ?>
+                                    </option>
+                                <?php endforeach;
+                            endif;
+                            ?>
+                        </select>
+                        <p class="description">Hold Ctrl (Windows) or Cmd (Mac) to select multiple categories</p>
+                    </td>
+                </tr>
+
+                <tr>
+                    <th scope="row">
+                        <label for="prefilter_versions">Version</label>
+                    </th>
+                    <td>
+                        <select name="prefilter_versions[]" id="prefilter_versions" multiple size="5" style="width:100%;max-width:500px">
+                            <?php
+                            $selected_versions = !empty($table_data['prefilters']['versions']) ? $table_data['prefilters']['versions'] : array();
+                            if (!empty($all_versions)):
+                                foreach ($all_versions as $version): ?>
+                                    <option value="<?php echo esc_attr($version); ?>" <?php selected(in_array($version, $selected_versions)); ?>>
+                                        <?php echo esc_html($version); ?>
+                                    </option>
+                                <?php endforeach;
+                            endif;
+                            ?>
+                        </select>
+                        <p class="description">Hold Ctrl (Windows) or Cmd (Mac) to select multiple versions</p>
+                    </td>
+                </tr>
+
+                <tr>
+                    <th scope="row">Display Options</th>
+                    <td>
+                        <label>
+                            <input type="checkbox" name="show_title" value="1" <?php checked(!empty($table_data['settings']['show_title']) && $table_data['settings']['show_title'] === 'yes'); ?>>
+                            <strong>Show table title on frontend</strong>
+                        </label>
+                        <p class="description">Display the table name above the table on your site</p>
                     </td>
                 </tr>
                 

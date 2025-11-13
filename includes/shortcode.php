@@ -15,8 +15,9 @@ function tkmtb_render_table($atts) {
     $table = tkmtb_get_table($atts['id']);
     if (!$table) return '<p><strong>Error:</strong> Table not found.</p>';
     
-    // Check cache
-    $cache_key = 'tkmtb_cache_' . $atts['id'] . '_' . md5(serialize($_GET));
+    // Check cache (cache key based on table ID and page number only, not $_GET)
+    $paged = isset($_GET['tpage']) ? intval($_GET['tpage']) : 1;
+    $cache_key = 'tkmtb_cache_' . $atts['id'] . '_page_' . $paged;
     if (tkmtb_get_setting('enable_caching') === 'yes') {
         $cached = get_transient($cache_key);
         if ($cached) return $cached;
@@ -55,22 +56,21 @@ function tkmtb_render_table($atts) {
     echo '--tkmtb-dropdown-border:' . tkmtb_get_setting('dropdown_border', '#b8a5c9') . ';';
     echo '}</style>';
     
-    // Get documents
-    $paged = isset($_GET['tpage']) ? intval($_GET['tpage']) : 1;
+    // Get documents (paged already set above for cache key)
     $args = tkmtb_build_query($table, $paged);
     $query = new WP_Query($args);
-    
+
+    // Show table title if enabled
+    if (!empty($table['settings']['show_title']) && $table['settings']['show_title'] === 'yes') {
+        echo '<h2 class="tkmtb-title">' . esc_html($table['name']) . '</h2>';
+    }
+
     if (!$query->have_posts()) {
-        echo '<p>No documents found.</p>';
+        echo '<p>No documents found matching the criteria.</p>';
         return ob_get_clean();
     }
-    
-    // Render filters
-    if (!empty($table['filters'])) {
-        tkmtb_render_filters($table['filters']);
-    }
-    
-    // Render table
+
+    // Render table (no frontend filters - admin pre-filters only)
     tkmtb_render_table_html($query, $table);
     
     // Render pagination
@@ -99,34 +99,68 @@ function tkmtb_build_query($table, $paged = 1) {
         'orderby' => 'date',
         'order' => 'DESC'
     );
-    
+
     $meta_query = array('relation' => 'AND');
-    
-    // Apply filters
-    if (isset($_GET['tkmtb_grade']) && $_GET['tkmtb_grade']) {
-        $meta_query[] = array('key' => '_tkm_grade', 'value' => sanitize_text_field($_GET['tkmtb_grade']));
+    $tax_query = array('relation' => 'AND');
+
+    // Apply admin pre-filters (NOT frontend filters - those are removed)
+    $prefilters = isset($table['prefilters']) && is_array($table['prefilters']) ? $table['prefilters'] : array();
+
+    // Level filter (meta field)
+    if (!empty($prefilters['levels']) && is_array($prefilters['levels'])) {
+        $meta_query[] = array(
+            'key' => '_tkm_level',
+            'value' => $prefilters['levels'],
+            'compare' => 'IN'
+        );
     }
-    if (isset($_GET['tkmtb_subject']) && $_GET['tkmtb_subject']) {
-        $meta_query[] = array('key' => '_tkm_subject', 'value' => sanitize_text_field($_GET['tkmtb_subject']));
+
+    // Grade filter (meta field)
+    if (!empty($prefilters['grades']) && is_array($prefilters['grades'])) {
+        $meta_query[] = array(
+            'key' => '_tkm_grade',
+            'value' => $prefilters['grades'],
+            'compare' => 'IN'
+        );
     }
-    if (isset($_GET['tkmtb_level']) && $_GET['tkmtb_level']) {
-        $meta_query[] = array('key' => '_tkm_level', 'value' => sanitize_text_field($_GET['tkmtb_level']));
+
+    // Subject filter (meta field)
+    if (!empty($prefilters['subjects']) && is_array($prefilters['subjects'])) {
+        $meta_query[] = array(
+            'key' => '_tkm_subject',
+            'value' => $prefilters['subjects'],
+            'compare' => 'IN'
+        );
     }
-    if (isset($_GET['tkmtb_version']) && $_GET['tkmtb_version']) {
-        $meta_query[] = array('key' => '_tkm_version', 'value' => sanitize_text_field($_GET['tkmtb_version']));
+
+    // Version filter (meta field)
+    if (!empty($prefilters['versions']) && is_array($prefilters['versions'])) {
+        $meta_query[] = array(
+            'key' => '_tkm_version',
+            'value' => $prefilters['versions'],
+            'compare' => 'IN'
+        );
     }
-    
+
+    // Category filter (taxonomy)
+    if (!empty($prefilters['categories']) && is_array($prefilters['categories'])) {
+        $tax_query[] = array(
+            'taxonomy' => 'file_category',
+            'field' => 'slug',
+            'terms' => $prefilters['categories'],
+            'operator' => 'IN'
+        );
+    }
+
+    // Add queries to args
     if (count($meta_query) > 1) {
         $args['meta_query'] = $meta_query;
     }
-    
-    // Category filter
-    if (isset($_GET['tkmtb_category']) && $_GET['tkmtb_category']) {
-        $args['tax_query'] = array(
-            array('taxonomy' => 'file_category', 'field' => 'slug', 'terms' => sanitize_text_field($_GET['tkmtb_category']))
-        );
+
+    if (count($tax_query) > 1) {
+        $args['tax_query'] = $tax_query;
     }
-    
+
     return $args;
 }
 
