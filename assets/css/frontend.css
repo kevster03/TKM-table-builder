@@ -1,0 +1,66 @@
+/* TeachersKE Table Builder - Frontend CSS
+ * Mobile-first, responsive, minified for speed
+ * Uses site fonts with !important for accuracy
+ */
+
+/* Filters */
+.tkmtb-filters{display:flex !important;flex-wrap:wrap !important;gap:12px !important;margin:0 0 20px 0 !important;padding:20px !important;background:var(--tkmtb-dropdown-bg,#fff) !important;border:2px solid var(--tkmtb-dropdown-border,#b8a5c9) !important;border-radius:12px !important}
+.tkmtb-filter{flex:1 !important;min-width:150px !important;padding:10px 15px !important;font-size:var(--tkmtb-dropdown-size,15px) !important;font-weight:500 !important;color:var(--tkmtb-dropdown-font,#2c2c2c) !important;background:var(--tkmtb-dropdown-bg,#fff) !important;border:2px solid var(--tkmtb-dropdown-border,#b8a5c9) !important;border-radius:8px !important;font-family:inherit !important;cursor:pointer !important;transition:all .2s !important}
+.tkmtb-filter:hover,.tkmtb-filter:focus{border-color:var(--tkmtb-border-external,#b8a5c9) !important;outline:none !important}
+.tkmtb-filter-btn,.tkmtb-reset-btn{padding:10px 24px !important;font-size:15px !important;font-weight:700 !important;border:none !important;border-radius:8px !important;cursor:pointer !important;transition:all .2s !important;font-family:inherit !important}
+.tkmtb-filter-btn{background:var(--tkmtb-button-bg,#c92651) !important;color:#fff !important}
+.tkmtb-filter-btn:hover{background:var(--tkmtb-button-hover,#a01d3f) !important;transform:translateY(-1px) !important}
+.tkmtb-reset-btn{background:#6c757d !important;color:#fff !important}
+.tkmtb-reset-btn:hover{background:#5a6268 !important}
+
+/* Table Wrapper */
+.tkmtb-wrapper{overflow-x:auto !important;margin:0 0 30px 0 !important;border:var(--tkmtb-border-external-size,2px) solid var(--tkmtb-border-external,#b8a5c9) !important;border-radius:12px !important;box-shadow:0 2px 8px rgba(0,0,0,.08) !important}
+
+/* Table */
+.tkmtb-table{width:100% !important;border-collapse:collapse !important;background:var(--tkmtb-bg-cell,#fff) !important;font-family:inherit !important}
+.tkmtb-table thead{background:var(--tkmtb-bg-header,#faf8fc) !important;border-bottom:var(--tkmtb-border-header-size,2px) solid var(--tkmtb-border-header,#b8a5c9) !important}
+.tkmtb-table th{padding:16px !important;font-size:var(--tkmtb-font-header-size,16px) !important;font-weight:700 !important;color:var(--tkmtb-font-header,#2c2c2c) !important;text-align:left !important;white-space:nowrap !important;font-family:inherit !important}
+.tkmtb-table td{padding:14px !important;font-size:var(--tkmtb-font-cell-size,15px) !important;font-weight:400 !important;color:var(--tkmtb-font-cell,#555) !important;border-top:var(--tkmtb-border-hcell-size,1px) solid var(--tkmtb-border-hcell,#e0d4ed) !important;border-right:var(--tkmtb-border-vcell-size,1px) solid var(--tkmtb-border-vcell,#e0d4ed) !important;font-family:inherit !important}
+.tkmtb-table td:last-child{border-right:none !important}
+.tkmtb-table tbody tr:hover{background:var(--tkmtb-bg-hover,#f5f5f5) !important}
+.tkmtb-table tbody tr:last-child td{border-bottom:var(--tkmtb-border-bottom-size,2px) solid var(--tkmtb-border-bottom,#b8a5c9) !important}
+
+/* Links */
+.tkmtb-link{color:var(--tkmtb-font-link,#c92651) !important;text-decoration:none !important;font-weight:600 !important;font-size:var(--tkmtb-font-link-size,15px) !important;transition:all .2s !important;font-family:inherit !important}
+.tkmtb-link:hover{text-decoration:underline !important;opacity:.8 !important}
+
+/* Image */
+.tkmtb-img{width:60px !important;height:60px !important;object-fit:cover !important;border-radius:8px !important;border:2px solid #e0d4ed !important}
+
+/* Button */
+.tkmtb-btn{display:inline-block !important;padding:8px 20px !important;background:var(--tkmtb-button-bg,#c92651) !important;color:var(--tkmtb-button-font,#fff) !important;font-size:var(--tkmtb-button-font-size,14px) !important;font-weight:700 !important;text-decoration:none !important;border:none !important;border-radius:6px !important;cursor:pointer !important;transition:all .2s !important;white-space:nowrap !important;font-family:inherit !important}
+.tkmtb-btn:hover{background:var(--tkmtb-button-hover,#a01d3f) !important;transform:translateY(-1px) !important;box-shadow:0 4px 8px rgba(0,0,0,.15) !important}
+
+/* Pagination */
+.tkmtb-pagination{display:flex !important;justify-content:center !important;align-items:center !important;gap:8px !important;margin:20px 0 0 0 !important;flex-wrap:wrap !important}
+.tkmtb-page{display:inline-block !important;padding:8px 14px !important;background:#fff !important;color:#2c2c2c !important;font-size:15px !important;font-weight:600 !important;text-decoration:none !important;border:2px solid #e0d4ed !important;border-radius:6px !important;transition:all .2s !important;font-family:inherit !important}
+.tkmtb-page:hover,.tkmtb-page.current{background:var(--tkmtb-button-bg,#c92651) !important;color:#fff !important;border-color:var(--tkmtb-button-bg,#c92651) !important}
+.tkmtb-load-more{padding:12px 30px !important;background:var(--tkmtb-button-bg,#c92651) !important;color:#fff !important;font-size:16px !important;font-weight:700 !important;border:none !important;border-radius:8px !important;cursor:pointer !important;transition:all .2s !important;font-family:inherit !important}
+.tkmtb-load-more:hover{background:var(--tkmtb-button-hover,#a01d3f) !important;transform:translateY(-2px) !important}
+
+/* Loading */
+.tkmtb-loading{opacity:.6 !important;pointer-events:none !important}
+.tkmtb-loading::after{content:'Loading...' !important;display:block !important;text-align:center !important;padding:20px !important;font-weight:600 !important}
+
+/* Responsive */
+@media(max-width:768px){
+.tkmtb-filters{flex-direction:column !important}
+.tkmtb-filter{min-width:100% !important}
+.tkmtb-table{font-size:14px !important}
+.tkmtb-table th,.tkmtb-table td{padding:10px !important}
+.tkmtb-img{width:50px !important;height:50px !important}
+}
+
+/* RTL Support */
+[dir="rtl"] .tkmtb-table th,[dir="rtl"] .tkmtb-table td{text-align:right !important}
+
+/* Print */
+@media print{
+.tkmtb-filters,.tkmtb-pagination,.tkmtb-btn{display:none !important}
+.tkmtb-table{border:1px solid #000 !important}
+}

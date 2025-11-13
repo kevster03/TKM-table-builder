@@ -1,0 +1,10 @@
+/* Admin CSS */
+.tkmtb-color-picker{width:100px !important}
+.wrap h2{margin-top:20px !important;padding-top:15px !important;border-top:2px solid #e0e0e0 !important}
+.form-table th{width:200px !important}
+.code{font-family:Consolas,Monaco,monospace !important;font-size:14px !important}
+.tkmtb-admin-header{display:flex !important;align-items:center !important;gap:15px !important;margin-bottom:20px !important}
+.tkmtb-admin-header h1{margin:0 !important}
+.tkmtb-stat-box{display:inline-block !important;padding:15px 20px !important;background:#fff !important;border:2px solid #e0e0e0 !important;border-radius:8px !important;margin-right:15px !important}
+.tkmtb-stat-box strong{display:block !important;font-size:24px !important;color:#c92651 !important}
+.tkmtb-stat-box span{font-size:12px !important;color:#666 !important;text-transform:uppercase !important}
