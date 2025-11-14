@@ -31,14 +31,13 @@ function tkmtb_ajax_filter() {
     while ($query->have_posts()) {
         $query->the_post();
         $post_id = get_the_ID();
-        $columns = !empty($table['columns']) ? $table['columns'] : tkmtb_get_setting('default_columns', array());
-        $clickable = tkmtb_get_setting('clickable_fields', array());
-        $lazy = tkmtb_get_setting('lazy_load') === 'yes';
-        
+        $columns = !empty($table['columns']) ? $table['columns'] : tkmtb_get_setting('default_columns', array('image', 'title', 'grade', 'subject', 'type', 'downloads', 'button'));
+        $clickable = tkmtb_get_setting('clickable_fields', array('title', 'image'));
+
         echo '<tr>';
         foreach ($columns as $col) {
             echo '<td>';
-            tkmtb_render_cell($col, $post_id, $clickable, $lazy);
+            tkmtb_render_cell($col, $post_id, $clickable);
             echo '</td>';
         }
         echo '</tr>';

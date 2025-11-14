@@ -11,18 +11,12 @@ function tkmtb_render_table($atts) {
     $atts = shortcode_atts(array('id' => 0), $atts);
     
     if (!$atts['id']) return '<p><strong>Error:</strong> Table ID required. Use: [tkm_table id="1"]</p>';
-    
+
     $table = tkmtb_get_table($atts['id']);
     if (!$table) return '<p><strong>Error:</strong> Table not found.</p>';
-    
-    // Check cache (cache key based on table ID and page number only, not $_GET)
+
     $paged = isset($_GET['tpage']) ? intval($_GET['tpage']) : 1;
-    $cache_key = 'tkmtb_cache_' . $atts['id'] . '_page_' . $paged;
-    if (tkmtb_get_setting('enable_caching') === 'yes') {
-        $cached = get_transient($cache_key);
-        if ($cached) return $cached;
-    }
-    
+
     ob_start();
     
     // Inject CSS variables for styling
@@ -79,15 +73,8 @@ function tkmtb_render_table($atts) {
     }
     
     wp_reset_postdata();
-    
-    $output = ob_get_clean();
-    
-    // Cache output
-    if (tkmtb_get_setting('enable_caching') === 'yes') {
-        set_transient($cache_key, $output, tkmtb_get_setting('cache_duration', 3600));
-    }
-    
-    return $output;
+
+    return ob_get_clean();
 }
 
 function tkmtb_build_query($table, $paged = 1) {
@@ -236,10 +223,9 @@ function tkmtb_render_filters($filters) {
 }
 
 function tkmtb_render_table_html($query, $table) {
-    $columns = !empty($table['columns']) ? $table['columns'] : tkmtb_get_setting('default_columns', array());
-    $clickable = tkmtb_get_setting('clickable_fields', array());
-    $lazy = tkmtb_get_setting('lazy_load') === 'yes';
-    
+    $columns = !empty($table['columns']) ? $table['columns'] : tkmtb_get_setting('default_columns', array('image', 'title', 'grade', 'subject', 'type', 'downloads', 'button'));
+    $clickable = tkmtb_get_setting('clickable_fields', array('title', 'image'));
+
     echo '<div class="tkmtb-wrapper"><table class="tkmtb-table"><thead><tr>';
     
     // Headers
@@ -256,7 +242,7 @@ function tkmtb_render_table_html($query, $table) {
         echo '<tr>';
         foreach ($columns as $col) {
             echo '<td>';
-            tkmtb_render_cell($col, $post_id, $clickable, $lazy);
+            tkmtb_render_cell($col, $post_id, $clickable);
             echo '</td>';
         }
         echo '</tr>';
@@ -265,15 +251,14 @@ function tkmtb_render_table_html($query, $table) {
     echo '</tbody></table></div>';
 }
 
-function tkmtb_render_cell($col, $post_id, $clickable, $lazy) {
+function tkmtb_render_cell($col, $post_id, $clickable) {
     $link_start = in_array($col, $clickable) ? '<a href="' . get_permalink($post_id) . '" class="tkmtb-link">' : '';
     $link_end = in_array($col, $clickable) ? '</a>' : '';
-    
+
     switch ($col) {
         case 'image':
             $img = tkm_get_document_image($post_id, 'thumbnail');
-            $loading = $lazy ? 'loading="lazy"' : '';
-            echo $link_start . '<img src="' . esc_url($img) . '" alt="" class="tkmtb-img" ' . $loading . '>' . $link_end;
+            echo $link_start . '<img src="' . esc_url($img) . '" alt="" class="tkmtb-img" loading="lazy">' . $link_end;
             break;
         case 'title':
             echo $link_start . '<strong>' . get_the_title() . '</strong>' . $link_end;

@@ -66,12 +66,7 @@ function tkmtb_set_defaults() {
         // Pagination
         'rows_per_page' => 10,
         'pagination_type' => 'numbers', // numbers, load_more, infinite
-        
-        // Performance
-        'enable_caching' => 'yes',
-        'cache_duration' => 3600,
-        'lazy_load' => 'yes',
-        
+
         // Colors - Borders
         'border_external_color' => '#b8a5c9',
         'border_external_size' => 2,

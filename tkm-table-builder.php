@@ -14,8 +14,8 @@ define('TKMTB_DIR', plugin_dir_path(__FILE__));
 define('TKMTB_URL', plugin_dir_url(__FILE__));
 
 // Check parent plugin - compatible with all versions
-// Runs at init to ensure post types are registered (parent plugin registers at init priority 0)
-add_action('init', 'tkmtb_check_parent', 11);
+// Runs on 'init' after post type registration (File Manager registers at priority 0)
+add_action('init', 'tkmtb_check_parent', 50);
 function tkmtb_check_parent() {
     // Check if teacher_document post type exists
     if (!post_type_exists('teacher_document')) {
@@ -44,7 +44,7 @@ require_once TKMTB_DIR . 'admin/tables-list.php';
 
 // Compatibility functions - only load if not already defined by File Manager
 // These should NEVER be needed if parent plugin is active, but provide fallbacks just in case
-add_action('init', 'tkmtb_load_compatibility', 12);
+add_action('init', 'tkmtb_load_compatibility', 60);
 function tkmtb_load_compatibility() {
     // Load tkm_get_levels if not available (MUST match parent plugin structure exactly)
     if (!function_exists('tkm_get_levels')) {
@@ -160,5 +160,17 @@ function tkmtb_has_shortcode() {
 
 // Helper: Get setting
 function tkmtb_get_setting($key, $default = '') {
-    return get_option('tkmtb_' . $key, $default);
+    $value = get_option('tkmtb_' . $key, $default);
+
+    // Ensure array values are properly returned
+    if (in_array($key, array('default_columns', 'clickable_fields')) && !is_array($value)) {
+        // If it's a string, try to convert to array
+        if (is_string($value) && !empty($value)) {
+            $value = array_map('trim', explode(',', $value));
+        } else {
+            $value = $default;
+        }
+    }
+
+    return $value;
 }

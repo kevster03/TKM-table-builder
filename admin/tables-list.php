@@ -117,7 +117,7 @@ function tkmtb_new_table_page() {
             'categories' => array(),
             'versions' => array()
         ),
-        'columns' => tkmtb_get_setting('default_columns', array()),
+        'columns' => tkmtb_get_setting('default_columns', array('image', 'title', 'grade', 'subject', 'type', 'downloads', 'button')),
         'settings' => array(
             'show_title' => 'no'
         )

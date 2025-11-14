@@ -20,7 +20,6 @@ function tkmtb_settings_page() {
         <h2 class="nav-tab-wrapper">
             <a href="?page=tkmtb-settings&tab=general" class="nav-tab <?php echo $active_tab === 'general' ? 'nav-tab-active' : ''; ?>">General</a>
             <a href="?page=tkmtb-settings&tab=appearance" class="nav-tab <?php echo $active_tab === 'appearance' ? 'nav-tab-active' : ''; ?>">Appearance</a>
-            <a href="?page=tkmtb-settings&tab=performance" class="nav-tab <?php echo $active_tab === 'performance' ? 'nav-tab-active' : ''; ?>">Performance</a>
         </h2>
         
         <form method="post" action="">
@@ -205,45 +204,7 @@ function tkmtb_settings_page() {
                         </td>
                     </tr>
                 </table>
-                
-            <?php elseif ($active_tab === 'performance'): ?>
-                <table class="form-table">
-                    <tr>
-                        <th colspan="2"><h2>⚡ Performance Settings</h2></th>
-                    </tr>
-                    <tr>
-                        <th>Enable Caching</th>
-                        <td>
-                            <label>
-                                <input type="checkbox" name="tkmtb_enable_caching" value="yes" <?php checked(tkmtb_get_setting('enable_caching'), 'yes'); ?>>
-                                Cache table queries for faster loading
-                            </label>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Cache Duration</th>
-                        <td>
-                            <input type="number" name="tkmtb_cache_duration" value="<?php echo esc_attr(tkmtb_get_setting('cache_duration', 3600)); ?>" min="300" max="86400" style="width:100px"> seconds
-                            <p class="description">How long to cache results (default: 3600 = 1 hour)</p>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Lazy Load Images</th>
-                        <td>
-                            <label>
-                                <input type="checkbox" name="tkmtb_lazy_load" value="yes" <?php checked(tkmtb_get_setting('lazy_load'), 'yes'); ?>>
-                                Enable lazy loading for table images
-                            </label>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Clear Cache</th>
-                        <td>
-                            <a href="?page=tkmtb-settings&tab=performance&clear_cache=1" class="button" onclick="return confirm('Clear all table cache?')">Clear All Cache Now</a>
-                            <p class="description">Use this if tables show outdated data</p>
-                        </td>
-                    </tr>
-                </table>
+
             <?php endif; ?>
             
             <p class="submit">
@@ -252,18 +213,11 @@ function tkmtb_settings_page() {
         </form>
     </div>
     <?php
-    
-    // Handle cache clear
-    if (isset($_GET['clear_cache']) && check_admin_referer('tkmtb_settings')) {
-        tkmtb_clear_cache();
-        echo '<div class="notice notice-success"><p><strong>✅ Cache cleared!</strong></p></div>';
-    }
 }
 
 function tkmtb_save_settings() {
     $settings = array(
         'default_columns', 'clickable_fields', 'rows_per_page', 'pagination_type', 'button_text',
-        'enable_caching', 'cache_duration', 'lazy_load',
         'border_external_color', 'border_external_size', 'border_header_color', 'border_header_size',
         'border_hcell_color', 'border_hcell_size', 'border_vcell_color', 'border_vcell_size',
         'border_bottom_color', 'border_bottom_size',
@@ -276,35 +230,26 @@ function tkmtb_save_settings() {
     
     foreach ($settings as $setting) {
         $key = 'tkmtb_' . $setting;
-        
-        if (isset($_POST[$key])) {
+
+        // Special handling for array settings from text input
+        if ($setting === 'default_columns' && isset($_POST['tkmtb_default_columns_text'])) {
+            $value = array_map('trim', explode(',', sanitize_text_field($_POST['tkmtb_default_columns_text'])));
+            update_option($key, $value);
+        } elseif ($setting === 'clickable_fields' && isset($_POST['tkmtb_clickable_fields_text'])) {
+            $value = array_map('trim', explode(',', sanitize_text_field($_POST['tkmtb_clickable_fields_text'])));
+            update_option($key, $value);
+        } elseif (isset($_POST[$key])) {
             $value = $_POST[$key];
-            
-            // Special handling for arrays from text input
-            if ($setting === 'default_columns' && isset($_POST['tkmtb_default_columns_text'])) {
-                $value = array_map('trim', explode(',', sanitize_text_field($_POST['tkmtb_default_columns_text'])));
-            } elseif ($setting === 'clickable_fields' && isset($_POST['tkmtb_clickable_fields_text'])) {
-                $value = array_map('trim', explode(',', sanitize_text_field($_POST['tkmtb_clickable_fields_text'])));
-            } elseif (strpos($setting, 'color') !== false || strpos($setting, 'bg') !== false) {
+
+            if (strpos($setting, 'color') !== false || strpos($setting, 'bg') !== false) {
                 $value = sanitize_hex_color($value);
-            } elseif (strpos($setting, 'size') !== false || $setting === 'rows_per_page' || $setting === 'cache_duration') {
+            } elseif (strpos($setting, 'size') !== false || $setting === 'rows_per_page') {
                 $value = intval($value);
-            } elseif ($setting === 'enable_caching' || $setting === 'lazy_load') {
-                $value = isset($_POST[$key]) ? 'yes' : 'no';
             } else {
                 $value = sanitize_text_field($value);
             }
-            
+
             update_option($key, $value);
-        } else {
-            if ($setting === 'enable_caching' || $setting === 'lazy_load') {
-                update_option($key, 'no');
-            }
         }
     }
-}
-
-function tkmtb_clear_cache() {
-    global $wpdb;
-    $wpdb->query("DELETE FROM {$wpdb->options} WHERE option_name LIKE 'tkmtb_cache_%'");
 }
