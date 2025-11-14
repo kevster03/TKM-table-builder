@@ -64,8 +64,14 @@ function tkmtb_render_table($atts) {
         return ob_get_clean();
     }
 
+    // Render live search
+    tkmtb_render_search_box();
+
     // Render table (no frontend filters - admin pre-filters only)
     tkmtb_render_table_html($query, $table);
+
+    // Render card view for mobile
+    tkmtb_render_cards_view($query, $table);
     
     // Render pagination
     if ($query->max_num_pages > 1) {
@@ -238,8 +244,8 @@ function tkmtb_render_table_html($query, $table) {
     while ($query->have_posts()) {
         $query->the_post();
         $post_id = get_the_ID();
-        
-        echo '<tr>';
+
+        echo '<tr data-searchable>';
         foreach ($columns as $col) {
             echo '<td>';
             tkmtb_render_cell($col, $post_id, $clickable);
@@ -340,4 +346,84 @@ function tkmtb_get_column_label($col) {
         'button' => 'Action'
     );
     return isset($labels[$col]) ? $labels[$col] : ucfirst($col);
+}
+
+function tkmtb_render_search_box() {
+    ?>
+    <div class="tkmtb-search-wrapper">
+        <input type="text" class="tkmtb-search" placeholder="🔍 Search documents..." aria-label="Search documents">
+        <span class="tkmtb-search-icon">🔍</span>
+    </div>
+    <div class="tkmtb-search-count" style="display:none;"></div>
+    <?php
+}
+
+function tkmtb_render_cards_view($query, $table) {
+    $columns = !empty($table['columns']) ? $table['columns'] : tkmtb_get_setting('default_columns', array('image', 'title', 'grade', 'subject', 'type', 'downloads', 'button'));
+
+    // Reset query for cards
+    $query->rewind_posts();
+
+    echo '<div class="tkmtb-cards">';
+
+    while ($query->have_posts()) {
+        $query->the_post();
+        $post_id = get_the_ID();
+
+        echo '<div class="tkmtb-card" data-searchable>';
+
+        // Card Header (Image + Title)
+        echo '<div class="tkmtb-card-header">';
+        if (in_array('image', $columns)) {
+            $img = tkm_get_document_image($post_id, 'thumbnail');
+            echo '<img src="' . esc_url($img) . '" alt="" class="tkmtb-card-img" loading="lazy">';
+        }
+        echo '<div class="tkmtb-card-title">';
+        echo '<h3><a href="' . get_permalink($post_id) . '">' . get_the_title() . '</a></h3>';
+        echo '</div>';
+        echo '</div>';
+
+        // Card Meta (Badges)
+        echo '<div class="tkmtb-card-meta">';
+        if (in_array('grade', $columns)) {
+            $grade = get_post_meta($post_id, '_tkm_grade', true);
+            if ($grade) echo '<span class="tkmtb-card-badge">📚 ' . esc_html($grade) . '</span>';
+        }
+        if (in_array('subject', $columns)) {
+            $subject = get_post_meta($post_id, '_tkm_subject', true);
+            if ($subject) echo '<span class="tkmtb-card-badge">📖 ' . esc_html($subject) . '</span>';
+        }
+        if (in_array('type', $columns)) {
+            $type = get_post_meta($post_id, '_tkm_file_ext', true);
+            if ($type) echo '<span class="tkmtb-card-badge">📄 ' . esc_html(strtoupper($type)) . '</span>';
+        }
+        echo '</div>';
+
+        // Card Excerpt
+        if (in_array('excerpt', $columns)) {
+            $excerpt = get_the_excerpt();
+            if ($excerpt) {
+                echo '<div class="tkmtb-card-excerpt">' . wp_trim_words($excerpt, 20) . '</div>';
+            }
+        }
+
+        // Card Footer (Downloads + Button)
+        echo '<div class="tkmtb-card-footer">';
+        if (in_array('downloads', $columns)) {
+            $downloads = get_post_meta($post_id, '_tkm_download_count', true);
+            echo '<span class="tkmtb-card-downloads">⬇️ ' . number_format(intval($downloads)) . ' downloads</span>';
+        }
+        if (in_array('button', $columns)) {
+            $btn_text = tkmtb_get_setting('button_text', 'View Details');
+            echo '<a href="' . get_permalink($post_id) . '" class="tkmtb-btn">' . esc_html($btn_text) . '</a>';
+        }
+        echo '</div>';
+
+        echo '</div>';
+    }
+
+    echo '</div>';
+
+    // Reset query again for table
+    $query->rewind_posts();
 }
