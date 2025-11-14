@@ -95,7 +95,7 @@ function tkmtb_new_table_page() {
         'id' => 0,
         'name' => '',
         'filters' => array(),
-        'columns' => tkmtb_get_setting('default_columns', array()),
+        'columns' => tkmtb_get_setting('default_columns', array('image', 'title', 'grade', 'subject', 'type', 'downloads', 'button')),
         'settings' => array()
     );
     

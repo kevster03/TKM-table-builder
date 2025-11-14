@@ -29,19 +29,14 @@ function tkmtb_set_defaults() {
     $defaults = array(
         // Default columns
         'default_columns' => array('image', 'title', 'grade', 'subject', 'type', 'downloads', 'button'),
-        
+
         // Clickable fields
         'clickable_fields' => array('title', 'image'),
-        
+
         // Pagination
         'rows_per_page' => 10,
         'pagination_type' => 'numbers', // numbers, load_more, infinite
-        
-        // Performance
-        'enable_caching' => 'yes',
-        'cache_duration' => 3600,
-        'lazy_load' => 'yes',
-        
+
         // Colors - Borders
         'border_external_color' => '#b8a5c9',
         'border_external_size' => 2,
@@ -53,12 +48,12 @@ function tkmtb_set_defaults() {
         'border_vcell_size' => 1,
         'border_bottom_color' => '#b8a5c9',
         'border_bottom_size' => 2,
-        
+
         // Colors - Backgrounds
         'bg_header' => '#faf8fc',
         'bg_cell' => '#ffffff',
         'bg_cell_hover' => '#f5f5f5',
-        
+
         // Colors - Fonts
         'font_header_color' => '#2c2c2c',
         'font_header_size' => 16,
@@ -66,21 +61,21 @@ function tkmtb_set_defaults() {
         'font_cell_size' => 15,
         'font_link_color' => '#c92651',
         'font_link_size' => 15,
-        
+
         // Button
         'button_bg' => '#c92651',
         'button_bg_hover' => '#a01d3f',
         'button_font_color' => '#ffffff',
         'button_font_size' => 14,
         'button_text' => 'View Details',
-        
+
         // Dropdown/Filter
         'dropdown_bg' => '#ffffff',
         'dropdown_font' => '#2c2c2c',
         'dropdown_size' => 15,
         'dropdown_border' => '#b8a5c9'
     );
-    
+
     foreach ($defaults as $key => $value) {
         $option = 'tkmtb_' . $key;
         if (get_option($option) === false) {
