@@ -14,8 +14,8 @@ define('TKMTB_DIR', plugin_dir_path(__FILE__));
 define('TKMTB_URL', plugin_dir_url(__FILE__));
 
 // Check parent plugin - compatible with all versions
-// Runs after all plugins are loaded to ensure functions are available
-add_action('plugins_loaded', 'tkmtb_check_parent', 20);
+// Runs on 'init' after post type registration (File Manager registers at priority 0)
+add_action('init', 'tkmtb_check_parent', 50);
 function tkmtb_check_parent() {
     // Check if teacher_document post type exists
     if (!post_type_exists('teacher_document')) {
@@ -25,7 +25,7 @@ function tkmtb_check_parent() {
         // Don't deactivate - just show warning
         return;
     }
-    
+
     // Everything is fine - plugin is compatible
 }
 
@@ -38,15 +38,32 @@ require_once TKMTB_DIR . 'admin/settings.php';
 require_once TKMTB_DIR . 'admin/tables-list.php';
 
 // Compatibility functions - only load if not already defined by File Manager
-add_action('plugins_loaded', 'tkmtb_load_compatibility', 30);
+add_action('init', 'tkmtb_load_compatibility', 60);
 function tkmtb_load_compatibility() {
-    // Load tkm_get_levels if not available
+    // Load tkm_get_levels if not available (matches File Manager v5.1.0 structure)
     if (!function_exists('tkm_get_levels')) {
         function tkm_get_levels() {
             return array(
-                'early_years' => array('label' => 'Early Years', 'grades' => array('PP1', 'PP2')),
-                'primary' => array('label' => 'Primary', 'grades' => array('Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6', 'Grade 7', 'Grade 8')),
-                'secondary' => array('label' => 'Secondary', 'grades' => array('Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'))
+                'early_years' => array(
+                    'label' => 'Early Years / Pre-Primary',
+                    'grades' => array('Playgroup', 'PP1', 'PP2')
+                ),
+                'lower_primary' => array(
+                    'label' => 'Lower Primary',
+                    'grades' => array('Grade 1', 'Grade 2', 'Grade 3')
+                ),
+                'upper_primary' => array(
+                    'label' => 'Upper Primary',
+                    'grades' => array('Grade 4', 'Grade 5', 'Grade 6')
+                ),
+                'junior_secondary' => array(
+                    'label' => 'Junior Secondary',
+                    'grades' => array('Grade 7', 'Grade 8', 'Grade 9')
+                ),
+                'senior_secondary' => array(
+                    'label' => 'Senior Secondary',
+                    'grades' => array('Grade 10', 'Grade 11', 'Grade 12')
+                )
             );
         }
     }
@@ -58,7 +75,7 @@ function tkmtb_load_compatibility() {
                 $img = get_the_post_thumbnail_url($post_id, $size);
                 if ($img) return $img;
             }
-            // Fallback placeholder
+            // Fallback placeholder SVG
             return 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="60" height="60"%3E%3Crect fill="%23e0d4ed" width="60" height="60"/%3E%3Ctext x="50%25" y="50%25" font-size="24" fill="%23b8a5c9" text-anchor="middle" dy=".3em"%3E📄%3C/text%3E%3C/svg%3E';
         }
     }
