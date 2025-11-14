@@ -230,16 +230,18 @@ function tkmtb_save_settings() {
     
     foreach ($settings as $setting) {
         $key = 'tkmtb_' . $setting;
-        
-        if (isset($_POST[$key])) {
+
+        // Special handling for array settings from text input
+        if ($setting === 'default_columns' && isset($_POST['tkmtb_default_columns_text'])) {
+            $value = array_map('trim', explode(',', sanitize_text_field($_POST['tkmtb_default_columns_text'])));
+            update_option($key, $value);
+        } elseif ($setting === 'clickable_fields' && isset($_POST['tkmtb_clickable_fields_text'])) {
+            $value = array_map('trim', explode(',', sanitize_text_field($_POST['tkmtb_clickable_fields_text'])));
+            update_option($key, $value);
+        } elseif (isset($_POST[$key])) {
             $value = $_POST[$key];
-            
-            // Special handling for arrays from text input
-            if ($setting === 'default_columns' && isset($_POST['tkmtb_default_columns_text'])) {
-                $value = array_map('trim', explode(',', sanitize_text_field($_POST['tkmtb_default_columns_text'])));
-            } elseif ($setting === 'clickable_fields' && isset($_POST['tkmtb_clickable_fields_text'])) {
-                $value = array_map('trim', explode(',', sanitize_text_field($_POST['tkmtb_clickable_fields_text'])));
-            } elseif (strpos($setting, 'color') !== false || strpos($setting, 'bg') !== false) {
+
+            if (strpos($setting, 'color') !== false || strpos($setting, 'bg') !== false) {
                 $value = sanitize_hex_color($value);
             } elseif (strpos($setting, 'size') !== false || $setting === 'rows_per_page') {
                 $value = intval($value);
