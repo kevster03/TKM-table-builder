@@ -1,6 +1,5 @@
 /**
- * Frontend JS - Live Search, Pagination, and Modern Features
- * Optimized for performance with debouncing
+ * Frontend JS - Pagination and Grid Color Generation
  */
 (function(){
 'use strict';
@@ -17,119 +16,26 @@ if(s.bg_cell)root.style.setProperty('--tkmtb-bg-cell',s.bg_cell);
 if(s.bg_cell_hover)root.style.setProperty('--tkmtb-bg-hover',s.bg_cell_hover);
 }
 
-// Debounce function for search performance
-function debounce(func,wait){
-var timeout;
-return function(){
-var context=this,args=arguments;
-clearTimeout(timeout);
-timeout=setTimeout(function(){func.apply(context,args);},wait);
-};
+// Generate unique colors for grid headers
+function stringToColor(str){
+var hash=0;
+for(var i=0;i<str.length;i++){
+hash=str.charCodeAt(i)+((hash<<5)-hash);
+}
+var h=hash%360;
+return'hsl('+h+',65%,50%)';
 }
 
-// Highlight search term in text
-function highlightText(text,term){
-if(!term)return text;
-var regex=new RegExp('('+term.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi');
-return text.replace(regex,'<span class="tkmtb-highlight">$1</span>');
-}
-
-// Remove highlights
-function removeHighlights(element){
-var highlights=element.querySelectorAll('.tkmtb-highlight');
-highlights.forEach(function(el){
-var text=document.createTextNode(el.textContent);
-el.parentNode.replaceChild(text,el);
-});
-}
-
-// Live Search Function
-function initLiveSearch(){
-var searchInput=document.querySelector('.tkmtb-search');
-if(!searchInput)return;
-
-var searchableRows=document.querySelectorAll('[data-searchable]');
-var countEl=document.querySelector('.tkmtb-search-count');
-var tableWrapper=document.querySelector('.tkmtb-table');
-var cardsWrapper=document.querySelector('.tkmtb-cards');
-
-var performSearch=function(){
-var term=searchInput.value.trim().toLowerCase();
-var visibleCount=0;
-
-// Remove existing highlights
-searchableRows.forEach(function(row){
-removeHighlights(row);
-});
-
-searchableRows.forEach(function(row){
-var text=row.textContent.toLowerCase();
-var isVisible=!term||text.indexOf(term)!==-1;
-
-if(isVisible){
-row.style.display='';
-visibleCount++;
-
-// Add highlights if search term exists
-if(term){
-var cells=row.querySelectorAll('td,h3,div');
-cells.forEach(function(cell){
-if(cell.textContent.toLowerCase().indexOf(term)!==-1){
-cell.innerHTML=highlightText(cell.innerHTML,term);
-}
-});
-}
-}else{
-row.style.display='none';
-}
-});
-
-// Update count
-if(countEl){
-if(term){
-countEl.textContent=visibleCount+' result'+(visibleCount!==1?'s':'')+' found';
-countEl.style.display='block';
-}else{
-countEl.style.display='none';
-}
-}
-
-// Show "no results" message if needed
-var noResultsEl=document.querySelector('.tkmtb-no-results');
-if(visibleCount===0&&term){
-if(!noResultsEl){
-noResultsEl=document.createElement('div');
-noResultsEl.className='tkmtb-no-results';
-noResultsEl.textContent='No documents found matching "'+term+'"';
-if(tableWrapper){
-tableWrapper.parentNode.insertBefore(noResultsEl,tableWrapper.nextSibling);
-}else if(cardsWrapper){
-cardsWrapper.appendChild(noResultsEl);
-}
-}else{
-noResultsEl.style.display='block';
-}
-}else if(noResultsEl){
-noResultsEl.style.display='none';
-}
-};
-
-searchInput.addEventListener('input',debounce(performSearch,300));
-
-// Clear search on Escape
-searchInput.addEventListener('keydown',function(e){
-if(e.key==='Escape'){
-searchInput.value='';
-performSearch();
-searchInput.blur();
-}
-});
-}
-
-// Pagination handling
+// Apply colors to grid headers
 document.addEventListener('DOMContentLoaded',function(){
-// Initialize live search
-initLiveSearch();
+var gridHeaders=document.querySelectorAll('.tkmtb-grid-header');
+gridHeaders.forEach(function(header){
+var title=header.getAttribute('data-title');
+if(title){
+var color=stringToColor(title);
+header.style.background='linear-gradient(135deg,'+color+','+color+'dd)';
+}
+});
 
 // Load more button (if pagination type is load_more)
 var loadMoreBtn=document.querySelector('.tkmtb-load-more');

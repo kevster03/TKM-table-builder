@@ -163,7 +163,7 @@ function tkmtb_get_setting($key, $default = '') {
     $value = get_option('tkmtb_' . $key, $default);
 
     // Ensure array values are properly returned
-    if (in_array($key, array('default_columns', 'clickable_fields')) && !is_array($value)) {
+    if (in_array($key, array('default_columns', 'clickable_fields', 'grid_metadata_fields')) && !is_array($value)) {
         // If it's a string, try to convert to array
         if (is_string($value) && !empty($value)) {
             $value = array_map('trim', explode(',', $value));

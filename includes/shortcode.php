@@ -64,15 +64,15 @@ function tkmtb_render_table($atts) {
         return ob_get_clean();
     }
 
-    // Render live search
-    tkmtb_render_search_box();
+    // Check display mode (grid or table)
+    $display_mode = tkmtb_get_setting('display_mode', 'table');
 
-    // Render table (no frontend filters - admin pre-filters only)
-    tkmtb_render_table_html($query, $table);
+    if ($display_mode === 'grid') {
+        tkmtb_render_grid_view($query, $table);
+    } else {
+        tkmtb_render_table_html($query, $table);
+    }
 
-    // Render card view for mobile
-    tkmtb_render_cards_view($query, $table);
-    
     // Render pagination
     if ($query->max_num_pages > 1) {
         tkmtb_render_pagination($query->max_num_pages, $paged);
@@ -233,19 +233,19 @@ function tkmtb_render_table_html($query, $table) {
     $clickable = tkmtb_get_setting('clickable_fields', array('title', 'image'));
 
     echo '<div class="tkmtb-wrapper"><table class="tkmtb-table"><thead><tr>';
-    
+
     // Headers
     foreach ($columns as $col) {
         echo '<th>' . esc_html(tkmtb_get_column_label($col)) . '</th>';
     }
     echo '</tr></thead><tbody>';
-    
+
     // Rows
     while ($query->have_posts()) {
         $query->the_post();
         $post_id = get_the_ID();
 
-        echo '<tr data-searchable>';
+        echo '<tr>';
         foreach ($columns as $col) {
             echo '<td>';
             tkmtb_render_cell($col, $post_id, $clickable);
@@ -253,7 +253,7 @@ function tkmtb_render_table_html($query, $table) {
         }
         echo '</tr>';
     }
-    
+
     echo '</tbody></table></div>';
 }
 
@@ -348,82 +348,78 @@ function tkmtb_get_column_label($col) {
     return isset($labels[$col]) ? $labels[$col] : ucfirst($col);
 }
 
-function tkmtb_render_search_box() {
-    ?>
-    <div class="tkmtb-search-wrapper">
-        <input type="text" class="tkmtb-search" placeholder="🔍 Search documents..." aria-label="Search documents">
-        <span class="tkmtb-search-icon">🔍</span>
-    </div>
-    <div class="tkmtb-search-count" style="display:none;"></div>
-    <?php
-}
+function tkmtb_render_grid_view($query, $table) {
+    $grid_fields = tkmtb_get_setting('grid_metadata_fields', array('grade', 'subject', 'type', 'downloads'));
 
-function tkmtb_render_cards_view($query, $table) {
-    $columns = !empty($table['columns']) ? $table['columns'] : tkmtb_get_setting('default_columns', array('image', 'title', 'grade', 'subject', 'type', 'downloads', 'button'));
-
-    // Reset query for cards
-    $query->rewind_posts();
-
-    echo '<div class="tkmtb-cards">';
+    echo '<div class="tkmtb-grid">';
 
     while ($query->have_posts()) {
         $query->the_post();
         $post_id = get_the_ID();
+        $title = get_the_title();
+        $initial = strtoupper(substr($title, 0, 1));
 
-        echo '<div class="tkmtb-card" data-searchable>';
+        echo '<div class="tkmtb-grid-card">';
 
-        // Card Header (Image + Title)
-        echo '<div class="tkmtb-card-header">';
-        if (in_array('image', $columns)) {
-            $img = tkm_get_document_image($post_id, 'thumbnail');
-            echo '<img src="' . esc_url($img) . '" alt="" class="tkmtb-card-img" loading="lazy">';
-        }
-        echo '<div class="tkmtb-card-title">';
-        echo '<h3><a href="' . get_permalink($post_id) . '">' . get_the_title() . '</a></h3>';
-        echo '</div>';
-        echo '</div>';
+        // Colored header with first letter
+        echo '<div class="tkmtb-grid-header" data-title="' . esc_attr($title) . '" data-initial="' . esc_attr($initial) . '"></div>';
 
-        // Card Meta (Badges)
-        echo '<div class="tkmtb-card-meta">';
-        if (in_array('grade', $columns)) {
-            $grade = get_post_meta($post_id, '_tkm_grade', true);
-            if ($grade) echo '<span class="tkmtb-card-badge">📚 ' . esc_html($grade) . '</span>';
-        }
-        if (in_array('subject', $columns)) {
-            $subject = get_post_meta($post_id, '_tkm_subject', true);
-            if ($subject) echo '<span class="tkmtb-card-badge">📖 ' . esc_html($subject) . '</span>';
-        }
-        if (in_array('type', $columns)) {
-            $type = get_post_meta($post_id, '_tkm_file_ext', true);
-            if ($type) echo '<span class="tkmtb-card-badge">📄 ' . esc_html(strtoupper($type)) . '</span>';
-        }
-        echo '</div>';
+        // Card body
+        echo '<div class="tkmtb-grid-body">';
 
-        // Card Excerpt
-        if (in_array('excerpt', $columns)) {
-            $excerpt = get_the_excerpt();
-            if ($excerpt) {
-                echo '<div class="tkmtb-card-excerpt">' . wp_trim_words($excerpt, 20) . '</div>';
+        // Title
+        echo '<h3 class="tkmtb-grid-title"><a href="' . get_permalink($post_id) . '">' . esc_html($title) . '</a></h3>';
+
+        // Metadata fields
+        echo '<div class="tkmtb-grid-meta">';
+        foreach ($grid_fields as $field) {
+            $value = tkmtb_get_grid_field_value($field, $post_id);
+            if ($value) {
+                echo '<div class="tkmtb-grid-meta-item"><strong>' . esc_html(tkmtb_get_column_label($field)) . ':</strong> ' . $value . '</div>';
             }
         }
-
-        // Card Footer (Downloads + Button)
-        echo '<div class="tkmtb-card-footer">';
-        if (in_array('downloads', $columns)) {
-            $downloads = get_post_meta($post_id, '_tkm_download_count', true);
-            echo '<span class="tkmtb-card-downloads">⬇️ ' . number_format(intval($downloads)) . ' downloads</span>';
-        }
-        if (in_array('button', $columns)) {
-            $btn_text = tkmtb_get_setting('button_text', 'View Details');
-            echo '<a href="' . get_permalink($post_id) . '" class="tkmtb-btn">' . esc_html($btn_text) . '</a>';
-        }
         echo '</div>';
 
+        // Footer with button
+        echo '<div class="tkmtb-grid-footer">';
+        $btn_text = tkmtb_get_setting('button_text', 'View Details');
+        echo '<a href="' . get_permalink($post_id) . '" class="tkmtb-btn">' . esc_html($btn_text) . '</a>';
         echo '</div>';
+
+        echo '</div>'; // grid-body
+        echo '</div>'; // grid-card
     }
 
     echo '</div>';
+}
 
-    // Reset query again for table
-    $query->rewind_posts();
+function tkmtb_get_grid_field_value($field, $post_id) {
+    switch ($field) {
+        case 'grade':
+            return esc_html(get_post_meta($post_id, '_tkm_grade', true));
+        case 'subject':
+            return esc_html(get_post_meta($post_id, '_tkm_subject', true));
+        case 'level':
+            $level = get_post_meta($post_id, '_tkm_level', true);
+            $levels = tkm_get_levels();
+            return isset($levels[$level]) ? esc_html($levels[$level]['label']) : esc_html($level);
+        case 'type':
+            $ext = get_post_meta($post_id, '_tkm_file_ext', true);
+            return esc_html(strtoupper($ext));
+        case 'category':
+            $cats = wp_get_post_terms($post_id, 'file_category', array('fields' => 'names'));
+            return !empty($cats) ? esc_html($cats[0]) : '';
+        case 'version':
+            return esc_html(get_post_meta($post_id, '_tkm_version', true));
+        case 'author':
+            return '<a href="' . get_author_posts_url(get_the_author_meta('ID')) . '">' . get_the_author() . '</a>';
+        case 'date':
+            return get_the_date();
+        case 'downloads':
+            return number_format(intval(get_post_meta($post_id, '_tkm_download_count', true)));
+        case 'excerpt':
+            return wp_trim_words(get_the_excerpt(), 15);
+        default:
+            return '';
+    }
 }

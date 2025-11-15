@@ -47,47 +47,20 @@
 .tkmtb-loading{opacity:.6 !important;pointer-events:none !important}
 .tkmtb-loading::after{content:'Loading...' !important;display:block !important;text-align:center !important;padding:20px !important;font-weight:600 !important}
 
-/* Skeleton Loaders */
-.tkmtb-skeleton{background:linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%) !important;background-size:200% 100% !important;animation:tkmtb-skeleton-loading 1.5s infinite !important;border-radius:4px !important}
-@keyframes tkmtb-skeleton-loading{0%{background-position:200% 0}100%{background-position:-200% 0}}
-.tkmtb-skeleton-row{display:table-row !important}
-.tkmtb-skeleton-cell{padding:14px !important;border-top:1px solid #e0d4ed !important}
-.tkmtb-skeleton-img{width:60px !important;height:60px !important;border-radius:8px !important}
-.tkmtb-skeleton-text{height:16px !important;border-radius:4px !important}
-.tkmtb-skeleton-text.short{width:60% !important}
-.tkmtb-skeleton-text.medium{width:80% !important}
-.tkmtb-skeleton-text.long{width:100% !important}
-.tkmtb-skeleton-btn{width:100px !important;height:32px !important;border-radius:6px !important}
-
-/* Live Search */
-.tkmtb-search-wrapper{margin:0 0 20px 0 !important;position:relative !important}
-.tkmtb-search{width:100% !important;padding:14px 50px 14px 20px !important;font-size:16px !important;font-weight:500 !important;color:#2c2c2c !important;background:#fff !important;border:2px solid #b8a5c9 !important;border-radius:12px !important;font-family:inherit !important;transition:all .2s !important}
-.tkmtb-search:focus{outline:none !important;border-color:var(--tkmtb-button-bg,#c92651) !important;box-shadow:0 0 0 3px rgba(201,38,81,.1) !important}
-.tkmtb-search::placeholder{color:#999 !important}
-.tkmtb-search-icon{position:absolute !important;right:18px !important;top:50% !important;transform:translateY(-50%) !important;font-size:20px !important;color:#999 !important;pointer-events:none !important}
-.tkmtb-search-count{margin:10px 0 !important;font-size:14px !important;color:#666 !important;font-weight:600 !important}
-.tkmtb-highlight{background:#fff3cd !important;padding:2px 4px !important;border-radius:2px !important;font-weight:700 !important}
-.tkmtb-no-results{text-align:center !important;padding:40px 20px !important;color:#999 !important;font-size:16px !important}
-
-/* Responsive Card View */
-.tkmtb-cards{display:none !important}
-@media(max-width:768px){
-.tkmtb-wrapper{border:none !important;box-shadow:none !important}
-.tkmtb-table{display:none !important}
-.tkmtb-cards{display:block !important}
-.tkmtb-card{background:#fff !important;border:2px solid #e0d4ed !important;border-radius:12px !important;padding:16px !important;margin:0 0 16px 0 !important;box-shadow:0 2px 8px rgba(0,0,0,.08) !important;transition:all .2s !important}
-.tkmtb-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.12) !important;transform:translateY(-2px) !important}
-.tkmtb-card-header{display:flex !important;align-items:flex-start !important;gap:12px !important;margin:0 0 12px 0 !important;padding:0 0 12px 0 !important;border-bottom:2px solid #f0f0f0 !important}
-.tkmtb-card-img{width:80px !important;height:80px !important;object-fit:cover !important;border-radius:8px !important;border:2px solid #e0d4ed !important;flex-shrink:0 !important}
-.tkmtb-card-title{flex:1 !important}
-.tkmtb-card-title h3{margin:0 0 4px 0 !important;font-size:16px !important;font-weight:700 !important;color:#2c2c2c !important;line-height:1.3 !important}
-.tkmtb-card-title h3 a{color:#2c2c2c !important;text-decoration:none !important}
-.tkmtb-card-meta{display:flex !important;flex-wrap:wrap !important;gap:8px !important;margin:0 0 12px 0 !important}
-.tkmtb-card-badge{display:inline-block !important;padding:4px 10px !important;background:#f0f0f0 !important;color:#555 !important;font-size:12px !important;font-weight:600 !important;border-radius:4px !important}
-.tkmtb-card-excerpt{font-size:14px !important;color:#666 !important;line-height:1.5 !important;margin:0 0 12px 0 !important}
-.tkmtb-card-footer{display:flex !important;justify-content:space-between !important;align-items:center !important;gap:12px !important}
-.tkmtb-card-downloads{font-size:13px !important;color:#999 !important;font-weight:600 !important}
-}
+/* Grid View */
+.tkmtb-grid{display:grid !important;grid-template-columns:repeat(auto-fill,minmax(280px,1fr)) !important;gap:20px !important;margin:0 0 30px 0 !important}
+.tkmtb-grid-card{background:#fff !important;border:2px solid #e0d4ed !important;border-radius:12px !important;padding:0 !important;overflow:hidden !important;transition:all .2s !important;box-shadow:0 2px 8px rgba(0,0,0,.08) !important}
+.tkmtb-grid-card:hover{transform:translateY(-4px) !important;box-shadow:0 8px 24px rgba(0,0,0,.15) !important}
+.tkmtb-grid-header{height:120px !important;display:flex !important;align-items:center !important;justify-content:center !important;background:linear-gradient(135deg,#c92651,#a01d3f) !important;position:relative !important}
+.tkmtb-grid-header::after{content:attr(data-initial) !important;font-size:48px !important;font-weight:700 !important;color:#fff !important;text-transform:uppercase !important}
+.tkmtb-grid-body{padding:20px !important}
+.tkmtb-grid-title{margin:0 0 12px 0 !important;font-size:18px !important;font-weight:700 !important;color:#2c2c2c !important;line-height:1.3 !important}
+.tkmtb-grid-title a{color:#2c2c2c !important;text-decoration:none !important;transition:color .2s !important}
+.tkmtb-grid-title a:hover{color:var(--tkmtb-button-bg,#c92651) !important}
+.tkmtb-grid-meta{margin:0 0 16px 0 !important}
+.tkmtb-grid-meta-item{display:flex !important;align-items:center !important;margin:0 0 8px 0 !important;font-size:14px !important;color:#666 !important}
+.tkmtb-grid-meta-item strong{width:80px !important;color:#999 !important;font-weight:600 !important}
+.tkmtb-grid-footer{padding:16px 0 0 0 !important;border-top:2px solid #f0f0f0 !important}
 
 /* Responsive */
 @media(max-width:768px){

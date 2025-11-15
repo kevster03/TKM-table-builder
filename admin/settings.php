@@ -28,16 +28,47 @@ function tkmtb_settings_page() {
             <?php if ($active_tab === 'general'): ?>
                 <table class="form-table">
                     <tr>
+                        <th colspan="2"><h2>Display Mode</h2></th>
+                    </tr>
+                    <tr>
+                        <th>View Type</th>
+                        <td>
+                            <label>
+                                <input type="radio" name="tkmtb_display_mode" value="table" <?php checked(tkmtb_get_setting('display_mode', 'table'), 'table'); ?>>
+                                Table View (Traditional table layout)
+                            </label><br>
+                            <label>
+                                <input type="radio" name="tkmtb_display_mode" value="grid" <?php checked(tkmtb_get_setting('display_mode', 'table'), 'grid'); ?>>
+                                Grid View (Cards with colored headers)
+                            </label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Grid Metadata Fields</th>
+                        <td>
+                            <?php
+                            $grid_fields = tkmtb_get_setting('grid_metadata_fields', array('grade', 'subject', 'type', 'downloads'));
+                            $available_fields = array('grade', 'subject', 'level', 'type', 'category', 'version', 'author', 'date', 'downloads', 'excerpt');
+                            foreach ($available_fields as $field) {
+                                $checked = in_array($field, $grid_fields) ? 'checked' : '';
+                                echo '<label style="display:inline-block;margin-right:15px;"><input type="checkbox" name="tkmtb_grid_metadata_fields[]" value="' . esc_attr($field) . '" ' . $checked . '> ' . esc_html(ucfirst($field)) . '</label>';
+                            }
+                            ?>
+                            <p class="description">Select which metadata fields to show in grid view cards</p>
+                        </td>
+                    </tr>
+
+                    <tr>
                         <th colspan="2"><h2>Default Columns</h2></th>
                     </tr>
                     <tr>
-                        <th>Default Columns</th>
+                        <th>Default Columns (Table View)</th>
                         <td>
                             <input type="text" name="tkmtb_default_columns_text" value="<?php echo esc_attr(implode(',', tkmtb_get_setting('default_columns', array()))); ?>" class="large-text" placeholder="image,title,grade,subject,type,downloads,button">
                             <p class="description">Comma-separated. Available: image, title, excerpt, grade, subject, level, type, category, version, author, date, downloads, button</p>
                         </td>
                     </tr>
-                    
+
                     <tr>
                         <th colspan="2"><h2>Clickable Fields (Post Links)</h2></th>
                     </tr>
@@ -217,6 +248,7 @@ function tkmtb_settings_page() {
 
 function tkmtb_save_settings() {
     $settings = array(
+        'display_mode', 'grid_metadata_fields',
         'default_columns', 'clickable_fields', 'rows_per_page', 'pagination_type', 'button_text',
         'border_external_color', 'border_external_size', 'border_header_color', 'border_header_size',
         'border_hcell_color', 'border_hcell_size', 'border_vcell_color', 'border_vcell_size',
@@ -227,7 +259,7 @@ function tkmtb_save_settings() {
         'button_bg', 'button_bg_hover', 'button_font_color', 'button_font_size',
         'dropdown_bg', 'dropdown_font', 'dropdown_size', 'dropdown_border'
     );
-    
+
     foreach ($settings as $setting) {
         $key = 'tkmtb_' . $setting;
 
@@ -237,6 +269,12 @@ function tkmtb_save_settings() {
             update_option($key, $value);
         } elseif ($setting === 'clickable_fields' && isset($_POST['tkmtb_clickable_fields_text'])) {
             $value = array_map('trim', explode(',', sanitize_text_field($_POST['tkmtb_clickable_fields_text'])));
+            update_option($key, $value);
+        } elseif ($setting === 'grid_metadata_fields') {
+            // Handle checkbox array
+            $value = isset($_POST['tkmtb_grid_metadata_fields']) && is_array($_POST['tkmtb_grid_metadata_fields'])
+                ? array_map('sanitize_text_field', $_POST['tkmtb_grid_metadata_fields'])
+                : array();
             update_option($key, $value);
         } elseif (isset($_POST[$key])) {
             $value = $_POST[$key];
