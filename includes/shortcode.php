@@ -64,14 +64,8 @@ function tkmtb_render_table($atts) {
         return ob_get_clean();
     }
 
-    // Check display mode (grid or table)
-    $display_mode = tkmtb_get_setting('display_mode', 'table');
-
-    if ($display_mode === 'grid') {
-        tkmtb_render_grid_view($query, $table);
-    } else {
-        tkmtb_render_table_html($query, $table);
-    }
+    // Render table
+    tkmtb_render_table_html($query, $table);
 
     // Render pagination
     if ($query->max_num_pages > 1) {
@@ -346,81 +340,4 @@ function tkmtb_get_column_label($col) {
         'button' => 'Action'
     );
     return isset($labels[$col]) ? $labels[$col] : ucfirst($col);
-}
-
-function tkmtb_render_grid_view($query, $table) {
-    $grid_fields = tkmtb_get_setting('grid_metadata_fields', array('grade', 'subject', 'type', 'downloads'));
-
-    echo '<div class="tkmtb-grid">';
-
-    $index = 0;
-    while ($query->have_posts()) {
-        $query->the_post();
-        $post_id = get_the_ID();
-        $title = get_the_title();
-
-        // Alternate between color schemes
-        $color_class = ($index % 2 === 0) ? 'tkmtb-grid-card-dark1' : 'tkmtb-grid-card-dark2';
-
-        echo '<div class="tkmtb-grid-card ' . $color_class . '">';
-
-        // Title at top
-        echo '<h3 class="tkmtb-grid-title"><a href="' . get_permalink($post_id) . '">' . esc_html($title) . '</a></h3>';
-
-        // Metadata fields in two columns
-        echo '<div class="tkmtb-grid-meta">';
-        foreach ($grid_fields as $field) {
-            $value = tkmtb_get_grid_field_value($field, $post_id);
-            if ($value) {
-                echo '<div class="tkmtb-grid-meta-item">';
-                echo '<span class="tkmtb-meta-label">' . esc_html(tkmtb_get_column_label($field)) . '</span>';
-                echo '<span class="tkmtb-meta-value">' . $value . '</span>';
-                echo '</div>';
-            }
-        }
-        echo '</div>';
-
-        // Footer with button
-        echo '<div class="tkmtb-grid-footer">';
-        $btn_text = tkmtb_get_setting('button_text', 'View Details');
-        echo '<a href="' . get_permalink($post_id) . '" class="tkmtb-btn tkmtb-btn-light">' . esc_html($btn_text) . '</a>';
-        echo '</div>';
-
-        echo '</div>'; // grid-card
-
-        $index++;
-    }
-
-    echo '</div>';
-}
-
-function tkmtb_get_grid_field_value($field, $post_id) {
-    switch ($field) {
-        case 'grade':
-            return esc_html(get_post_meta($post_id, '_tkm_grade', true));
-        case 'subject':
-            return esc_html(get_post_meta($post_id, '_tkm_subject', true));
-        case 'level':
-            $level = get_post_meta($post_id, '_tkm_level', true);
-            $levels = tkm_get_levels();
-            return isset($levels[$level]) ? esc_html($levels[$level]['label']) : esc_html($level);
-        case 'type':
-            $ext = get_post_meta($post_id, '_tkm_file_ext', true);
-            return esc_html(strtoupper($ext));
-        case 'category':
-            $cats = wp_get_post_terms($post_id, 'file_category', array('fields' => 'names'));
-            return !empty($cats) ? esc_html($cats[0]) : '';
-        case 'version':
-            return esc_html(get_post_meta($post_id, '_tkm_version', true));
-        case 'author':
-            return '<a href="' . get_author_posts_url(get_the_author_meta('ID')) . '">' . get_the_author() . '</a>';
-        case 'date':
-            return get_the_date();
-        case 'downloads':
-            return number_format(intval(get_post_meta($post_id, '_tkm_download_count', true)));
-        case 'excerpt':
-            return wp_trim_words(get_the_excerpt(), 15);
-        default:
-            return '';
-    }
 }

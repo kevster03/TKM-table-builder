@@ -62,8 +62,6 @@ function tkmtb_set_defaults() {
 
         // Display options
         'show_table_title' => 'no', // Show table name on frontend
-        'display_mode' => 'table', // table or grid
-        'grid_metadata_fields' => array('grade', 'subject', 'type', 'downloads'),
 
         // Pagination
         'rows_per_page' => 10,
