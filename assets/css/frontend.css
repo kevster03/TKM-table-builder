@@ -48,21 +48,26 @@
 .tkmtb-loading::after{content:'Loading...' !important;display:block !important;text-align:center !important;padding:20px !important;font-weight:600 !important}
 
 /* Grid View */
-.tkmtb-grid{display:grid !important;grid-template-columns:repeat(auto-fill,minmax(320px,1fr)) !important;gap:24px !important;margin:0 0 30px 0 !important}
-.tkmtb-grid-card{border:3px solid rgba(255,255,255,.15) !important;border-radius:16px !important;padding:24px !important;overflow:hidden !important;transition:all .3s ease !important;box-shadow:0 4px 16px rgba(0,0,0,.12) !important;position:relative !important}
-.tkmtb-grid-card-dark1{background:linear-gradient(135deg,#2c3e50,#34495e) !important}
-.tkmtb-grid-card-dark2{background:linear-gradient(135deg,#8e44ad,#9b59b6) !important}
-.tkmtb-grid-card:hover{transform:translateY(-6px) !important;box-shadow:0 12px 32px rgba(0,0,0,.2) !important;border-color:rgba(255,255,255,.3) !important}
-.tkmtb-grid-title{margin:0 0 20px 0 !important;font-size:20px !important;font-weight:700 !important;color:#fff !important;line-height:1.4 !important;padding-bottom:16px !important;border-bottom:2px solid rgba(255,255,255,.2) !important}
-.tkmtb-grid-title a{color:#fff !important;text-decoration:none !important;transition:opacity .2s !important}
-.tkmtb-grid-title a:hover{opacity:.8 !important}
-.tkmtb-grid-meta{display:grid !important;grid-template-columns:repeat(2,1fr) !important;gap:16px !important;margin:0 0 20px 0 !important}
-.tkmtb-grid-meta-item{display:flex !important;flex-direction:column !important;gap:4px !important}
-.tkmtb-meta-label{font-size:12px !important;font-weight:600 !important;text-transform:uppercase !important;letter-spacing:.5px !important;color:rgba(255,255,255,.6) !important}
-.tkmtb-meta-value{font-size:15px !important;font-weight:600 !important;color:#fff !important}
-.tkmtb-grid-footer{padding:16px 0 0 0 !important;border-top:2px solid rgba(255,255,255,.2) !important;text-align:center !important}
-.tkmtb-btn-light{background:rgba(255,255,255,.9) !important;color:#2c3e50 !important;font-weight:700 !important;border:2px solid transparent !important}
-.tkmtb-btn-light:hover{background:#fff !important;border-color:rgba(255,255,255,.3) !important;transform:translateY(-2px) !important}
+.tkmtb-grid{display:grid !important;grid-template-columns:repeat(auto-fill,minmax(340px,1fr)) !important;gap:32px !important;margin:0 0 40px 0 !important;padding:8px !important}
+.tkmtb-grid-card{border:4px solid transparent !important;border-radius:20px !important;padding:28px !important;overflow:hidden !important;transition:all .35s cubic-bezier(.4,0,.2,1) !important;box-shadow:0 8px 24px rgba(0,0,0,.18),0 2px 8px rgba(0,0,0,.12) !important;position:relative !important;backdrop-filter:blur(10px) !important}
+.tkmtb-grid-card::before{content:'' !important;position:absolute !important;top:-2px !important;left:-2px !important;right:-2px !important;bottom:-2px !important;background:linear-gradient(45deg,rgba(255,255,255,.3),rgba(255,255,255,.1)) !important;border-radius:20px !important;z-index:-1 !important;opacity:0 !important;transition:opacity .35s !important}
+.tkmtb-grid-card:hover::before{opacity:1 !important}
+.tkmtb-grid-card-dark1{background:linear-gradient(135deg,#1a237e 0%,#283593 50%,#3949ab 100%) !important;border-color:rgba(100,150,255,.3) !important}
+.tkmtb-grid-card-dark2{background:linear-gradient(135deg,#c2185b 0%,#d81b60 50%,#e91e63 100%) !important;border-color:rgba(255,100,150,.3) !important}
+.tkmtb-grid-card:hover{transform:translateY(-8px) scale(1.02) !important;box-shadow:0 20px 48px rgba(0,0,0,.25),0 8px 16px rgba(0,0,0,.15),inset 0 1px 0 rgba(255,255,255,.2) !important;border-color:rgba(255,255,255,.5) !important}
+.tkmtb-grid-title{margin:0 0 24px 0 !important;font-size:22px !important;font-weight:800 !important;color:#fff !important;line-height:1.3 !important;padding-bottom:20px !important;border-bottom:3px solid rgba(255,255,255,.25) !important;text-shadow:0 2px 4px rgba(0,0,0,.2) !important;position:relative !important}
+.tkmtb-grid-title::after{content:'' !important;position:absolute !important;bottom:-3px !important;left:0 !important;width:60px !important;height:3px !important;background:rgba(255,255,255,.8) !important;transition:width .3s !important}
+.tkmtb-grid-card:hover .tkmtb-grid-title::after{width:120px !important}
+.tkmtb-grid-title a{color:#fff !important;text-decoration:none !important;transition:all .2s !important;display:inline-block !important}
+.tkmtb-grid-title a:hover{opacity:.9 !important;transform:translateX(4px) !important}
+.tkmtb-grid-meta{display:grid !important;grid-template-columns:repeat(2,1fr) !important;gap:20px !important;margin:0 0 24px 0 !important}
+.tkmtb-grid-meta-item{display:flex !important;flex-direction:column !important;gap:6px !important;background:rgba(0,0,0,.15) !important;padding:12px 14px !important;border-radius:12px !important;border-left:3px solid rgba(255,255,255,.4) !important;transition:all .2s !important}
+.tkmtb-grid-meta-item:hover{background:rgba(0,0,0,.25) !important;border-left-color:rgba(255,255,255,.7) !important;transform:translateX(4px) !important}
+.tkmtb-meta-label{font-size:11px !important;font-weight:700 !important;text-transform:uppercase !important;letter-spacing:1px !important;color:rgba(255,255,255,.7) !important}
+.tkmtb-meta-value{font-size:16px !important;font-weight:700 !important;color:#fff !important;text-shadow:0 1px 2px rgba(0,0,0,.2) !important}
+.tkmtb-grid-footer{padding:20px 0 0 0 !important;border-top:3px solid rgba(255,255,255,.25) !important;text-align:center !important;margin-top:4px !important}
+.tkmtb-btn-light{background:rgba(255,255,255,.95) !important;color:#1a1a1a !important;font-weight:800 !important;border:3px solid rgba(255,255,255,.3) !important;padding:12px 28px !important;font-size:15px !important;letter-spacing:.5px !important;text-transform:uppercase !important;box-shadow:0 4px 12px rgba(0,0,0,.2) !important}
+.tkmtb-btn-light:hover{background:#fff !important;border-color:rgba(255,255,255,.6) !important;transform:translateY(-3px) !important;box-shadow:0 8px 20px rgba(0,0,0,.3) !important}
 
 /* Responsive */
 @media(max-width:768px){
