@@ -279,7 +279,9 @@ function tkmtb_render_cell($col, $post_id, $clickable) {
             break;
         case 'type':
             $ext = get_post_meta($post_id, '_tkm_file_ext', true);
-            echo esc_html(strtoupper($ext));
+            if ($ext) {
+                echo '<span class="tkmtb-file-icon tkmtb-file-' . esc_attr(strtolower($ext)) . '">' . esc_html(strtoupper($ext)) . '</span>';
+            }
             break;
         case 'category':
             $cats = wp_get_post_terms($post_id, 'file_category', array('fields' => 'names'));
