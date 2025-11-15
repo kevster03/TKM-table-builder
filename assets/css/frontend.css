@@ -47,17 +47,6 @@
 .tkmtb-loading{opacity:.6 !important;pointer-events:none !important}
 .tkmtb-loading::after{content:'Loading...' !important;display:block !important;text-align:center !important;padding:20px !important;font-weight:600 !important}
 
-/* File Type Icons */
-.tkmtb-file-icon{display:inline-block !important;padding:4px 10px !important;font-size:11px !important;font-weight:700 !important;border-radius:4px !important;text-transform:uppercase !important;letter-spacing:.5px !important;color:#fff !important;text-align:center !important;min-width:45px !important}
-.tkmtb-file-pdf{background:#e53935 !important}
-.tkmtb-file-doc,.tkmtb-file-docx{background:#2196f3 !important}
-.tkmtb-file-xls,.tkmtb-file-xlsx{background:#4caf50 !important}
-.tkmtb-file-ppt,.tkmtb-file-pptx{background:#ff9800 !important}
-.tkmtb-file-zip,.tkmtb-file-rar,.tkmtb-file-7z{background:#9c27b0 !important}
-.tkmtb-file-jpg,.tkmtb-file-jpeg,.tkmtb-file-png,.tkmtb-file-gif,.tkmtb-file-svg{background:#00bcd4 !important}
-.tkmtb-file-txt,.tkmtb-file-rtf{background:#607d8b !important}
-.tkmtb-file-mp3,.tkmtb-file-wav,.tkmtb-file-mp4,.tkmtb-file-avi{background:#f44336 !important}
-
 /* Responsive */
 @media(max-width:768px){
 .tkmtb-filters{flex-direction:column !important}
