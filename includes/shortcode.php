@@ -9,7 +9,7 @@ add_shortcode('tkm_table', 'tkmtb_render_table');
 
 function tkmtb_render_table($atts) {
     $atts = shortcode_atts(array('id' => 0), $atts);
-    
+
     if (!$atts['id']) return '<p><strong>Error:</strong> Table ID required. Use: [tkm_table id="1"]</p>';
 
     $table = tkmtb_get_table($atts['id']);
@@ -18,39 +18,11 @@ function tkmtb_render_table($atts) {
     $paged = isset($_GET['tpage']) ? intval($_GET['tpage']) : 1;
 
     ob_start();
-    
+
     // Inject CSS variables for styling
-    echo '<style>:root{';
-    echo '--tkmtb-border-external:' . tkmtb_get_setting('border_external_color', '#b8a5c9') . ';';
-    echo '--tkmtb-border-external-size:' . tkmtb_get_setting('border_external_size', 2) . 'px;';
-    echo '--tkmtb-border-header:' . tkmtb_get_setting('border_header_color', '#b8a5c9') . ';';
-    echo '--tkmtb-border-header-size:' . tkmtb_get_setting('border_header_size', 2) . 'px;';
-    echo '--tkmtb-border-hcell:' . tkmtb_get_setting('border_hcell_color', '#e0d4ed') . ';';
-    echo '--tkmtb-border-hcell-size:' . tkmtb_get_setting('border_hcell_size', 1) . 'px;';
-    echo '--tkmtb-border-vcell:' . tkmtb_get_setting('border_vcell_color', '#e0d4ed') . ';';
-    echo '--tkmtb-border-vcell-size:' . tkmtb_get_setting('border_vcell_size', 1) . 'px;';
-    echo '--tkmtb-border-bottom:' . tkmtb_get_setting('border_bottom_color', '#b8a5c9') . ';';
-    echo '--tkmtb-border-bottom-size:' . tkmtb_get_setting('border_bottom_size', 2) . 'px;';
-    echo '--tkmtb-bg-header:' . tkmtb_get_setting('bg_header', '#faf8fc') . ';';
-    echo '--tkmtb-bg-cell:' . tkmtb_get_setting('bg_cell', '#ffffff') . ';';
-    echo '--tkmtb-bg-hover:' . tkmtb_get_setting('bg_cell_hover', '#f5f5f5') . ';';
-    echo '--tkmtb-font-header:' . tkmtb_get_setting('font_header_color', '#2c2c2c') . ';';
-    echo '--tkmtb-font-header-size:' . tkmtb_get_setting('font_header_size', 16) . 'px;';
-    echo '--tkmtb-font-cell:' . tkmtb_get_setting('font_cell_color', '#555555') . ';';
-    echo '--tkmtb-font-cell-size:' . tkmtb_get_setting('font_cell_size', 15) . 'px;';
-    echo '--tkmtb-font-link:' . tkmtb_get_setting('font_link_color', '#c92651') . ';';
-    echo '--tkmtb-font-link-size:' . tkmtb_get_setting('font_link_size', 15) . 'px;';
-    echo '--tkmtb-button-bg:' . tkmtb_get_setting('button_bg', '#c92651') . ';';
-    echo '--tkmtb-button-hover:' . tkmtb_get_setting('button_bg_hover', '#a01d3f') . ';';
-    echo '--tkmtb-button-font:' . tkmtb_get_setting('button_font_color', '#ffffff') . ';';
-    echo '--tkmtb-button-font-size:' . tkmtb_get_setting('button_font_size', 14) . 'px;';
-    echo '--tkmtb-dropdown-bg:' . tkmtb_get_setting('dropdown_bg', '#ffffff') . ';';
-    echo '--tkmtb-dropdown-font:' . tkmtb_get_setting('dropdown_font', '#2c2c2c') . ';';
-    echo '--tkmtb-dropdown-size:' . tkmtb_get_setting('dropdown_size', 15) . 'px;';
-    echo '--tkmtb-dropdown-border:' . tkmtb_get_setting('dropdown_border', '#b8a5c9') . ';';
-    echo '}</style>';
-    
-    // Get documents (paged already set above for cache key)
+    tkmtb_render_css_vars();
+
+    // Get documents
     $args = tkmtb_build_query($table, $paged);
     $query = new WP_Query($args);
 
@@ -64,6 +36,9 @@ function tkmtb_render_table($atts) {
         return ob_get_clean();
     }
 
+    // Add structured data for SEO
+    tkmtb_render_schema($query, $table);
+
     // Render table
     tkmtb_render_table_html($query, $table);
 
@@ -71,10 +46,94 @@ function tkmtb_render_table($atts) {
     if ($query->max_num_pages > 1) {
         tkmtb_render_pagination($query->max_num_pages, $paged);
     }
-    
+
     wp_reset_postdata();
 
     return ob_get_clean();
+}
+
+function tkmtb_render_css_vars() {
+    $vars = array(
+        'border-external' => array(tkmtb_get_setting('border_external_color', '#b8a5c9'), ''),
+        'border-external-size' => array(tkmtb_get_setting('border_external_size', 2), 'px'),
+        'border-header' => array(tkmtb_get_setting('border_header_color', '#b8a5c9'), ''),
+        'border-header-size' => array(tkmtb_get_setting('border_header_size', 2), 'px'),
+        'border-hcell' => array(tkmtb_get_setting('border_hcell_color', '#e0d4ed'), ''),
+        'border-hcell-size' => array(tkmtb_get_setting('border_hcell_size', 1), 'px'),
+        'border-vcell' => array(tkmtb_get_setting('border_vcell_color', '#e0d4ed'), ''),
+        'border-vcell-size' => array(tkmtb_get_setting('border_vcell_size', 1), 'px'),
+        'border-bottom' => array(tkmtb_get_setting('border_bottom_color', '#b8a5c9'), ''),
+        'border-bottom-size' => array(tkmtb_get_setting('border_bottom_size', 2), 'px'),
+        'bg-header' => array(tkmtb_get_setting('bg_header', '#faf8fc'), ''),
+        'bg-cell' => array(tkmtb_get_setting('bg_cell', '#ffffff'), ''),
+        'bg-hover' => array(tkmtb_get_setting('bg_cell_hover', '#f5f5f5'), ''),
+        'font-header' => array(tkmtb_get_setting('font_header_color', '#2c2c2c'), ''),
+        'font-header-size' => array(tkmtb_get_setting('font_header_size', 16), 'px'),
+        'font-cell' => array(tkmtb_get_setting('font_cell_color', '#555555'), ''),
+        'font-cell-size' => array(tkmtb_get_setting('font_cell_size', 15), 'px'),
+        'font-link' => array(tkmtb_get_setting('font_link_color', '#c92651'), ''),
+        'font-link-size' => array(tkmtb_get_setting('font_link_size', 15), 'px'),
+        'button-bg' => array(tkmtb_get_setting('button_bg', '#c92651'), ''),
+        'button-hover' => array(tkmtb_get_setting('button_bg_hover', '#a01d3f'), ''),
+        'button-font' => array(tkmtb_get_setting('button_font_color', '#ffffff'), ''),
+        'button-font-size' => array(tkmtb_get_setting('button_font_size', 14), 'px'),
+        'dropdown-bg' => array(tkmtb_get_setting('dropdown_bg', '#ffffff'), ''),
+        'dropdown-font' => array(tkmtb_get_setting('dropdown_font', '#2c2c2c'), ''),
+        'dropdown-size' => array(tkmtb_get_setting('dropdown_size', 15), 'px'),
+        'dropdown-border' => array(tkmtb_get_setting('dropdown_border', '#b8a5c9'), '')
+    );
+
+    echo '<style>:root{';
+    foreach ($vars as $name => $data) {
+        echo '--tkmtb-' . $name . ':' . $data[0] . $data[1] . ';';
+    }
+    echo '}</style>';
+}
+
+function tkmtb_render_schema($query, $table) {
+    $items = array();
+    $temp_query = clone $query;
+
+    while ($temp_query->have_posts()) {
+        $temp_query->the_post();
+        $post_id = get_the_ID();
+
+        $items[] = array(
+            '@type' => 'DigitalDocument',
+            'name' => get_the_title(),
+            'url' => get_permalink($post_id),
+            'encodingFormat' => get_post_meta($post_id, '_tkm_file_ext', true),
+            'description' => wp_trim_words(get_the_excerpt(), 20, '...'),
+            'educationalUse' => get_post_meta($post_id, '_tkm_subject', true),
+            'audience' => array(
+                '@type' => 'EducationalAudience',
+                'educationalRole' => get_post_meta($post_id, '_tkm_grade', true)
+            ),
+            'interactionStatistic' => array(
+                '@type' => 'InteractionCounter',
+                'interactionType' => 'https://schema.org/DownloadAction',
+                'userInteractionCount' => intval(get_post_meta($post_id, '_tkm_download_count', true))
+            )
+        );
+    }
+
+    wp_reset_postdata();
+
+    $schema = array(
+        '@context' => 'https://schema.org',
+        '@type' => 'ItemList',
+        'name' => $table['name'],
+        'numberOfItems' => count($items),
+        'itemListElement' => array_map(function($item, $index) {
+            return array(
+                '@type' => 'ListItem',
+                'position' => $index + 1,
+                'item' => $item
+            );
+        }, $items, array_keys($items))
+    );
+
+    echo '<script type="application/ld+json">' . wp_json_encode($schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . '</script>';
 }
 
 function tkmtb_build_query($table, $paged = 1) {
