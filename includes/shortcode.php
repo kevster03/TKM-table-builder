@@ -278,9 +278,32 @@ function tkmtb_render_cell($col, $post_id, $clickable) {
             echo isset($levels[$level]) ? esc_html($levels[$level]['label']) : esc_html($level);
             break;
         case 'type':
+            // Try multiple methods to get file extension
             $ext = get_post_meta($post_id, '_tkm_file_ext', true);
-            if ($ext) {
+
+            // Fallback: try to get from file URL
+            if (empty($ext)) {
+                $file_url = get_post_meta($post_id, '_tkm_file_url', true);
+                if (!empty($file_url)) {
+                    $ext = pathinfo($file_url, PATHINFO_EXTENSION);
+                }
+            }
+
+            // Fallback: try to get from attachment
+            if (empty($ext)) {
+                $attachment_id = get_post_meta($post_id, '_tkm_file_id', true);
+                if (!empty($attachment_id)) {
+                    $file_path = get_attached_file($attachment_id);
+                    if ($file_path) {
+                        $ext = pathinfo($file_path, PATHINFO_EXTENSION);
+                    }
+                }
+            }
+
+            if (!empty($ext)) {
                 echo '<span class="tkmtb-file-icon tkmtb-file-' . esc_attr(strtolower($ext)) . '">' . esc_html(strtoupper($ext)) . '</span>';
+            } else {
+                echo '-';
             }
             break;
         case 'category':
