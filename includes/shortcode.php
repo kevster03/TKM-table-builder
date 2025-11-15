@@ -353,29 +353,29 @@ function tkmtb_render_grid_view($query, $table) {
 
     echo '<div class="tkmtb-grid">';
 
+    $index = 0;
     while ($query->have_posts()) {
         $query->the_post();
         $post_id = get_the_ID();
         $title = get_the_title();
-        $initial = strtoupper(substr($title, 0, 1));
 
-        echo '<div class="tkmtb-grid-card">';
+        // Alternate between color schemes
+        $color_class = ($index % 2 === 0) ? 'tkmtb-grid-card-dark1' : 'tkmtb-grid-card-dark2';
 
-        // Colored header with first letter
-        echo '<div class="tkmtb-grid-header" data-title="' . esc_attr($title) . '" data-initial="' . esc_attr($initial) . '"></div>';
+        echo '<div class="tkmtb-grid-card ' . $color_class . '">';
 
-        // Card body
-        echo '<div class="tkmtb-grid-body">';
-
-        // Title
+        // Title at top
         echo '<h3 class="tkmtb-grid-title"><a href="' . get_permalink($post_id) . '">' . esc_html($title) . '</a></h3>';
 
-        // Metadata fields
+        // Metadata fields in two columns
         echo '<div class="tkmtb-grid-meta">';
         foreach ($grid_fields as $field) {
             $value = tkmtb_get_grid_field_value($field, $post_id);
             if ($value) {
-                echo '<div class="tkmtb-grid-meta-item"><strong>' . esc_html(tkmtb_get_column_label($field)) . ':</strong> ' . $value . '</div>';
+                echo '<div class="tkmtb-grid-meta-item">';
+                echo '<span class="tkmtb-meta-label">' . esc_html(tkmtb_get_column_label($field)) . '</span>';
+                echo '<span class="tkmtb-meta-value">' . $value . '</span>';
+                echo '</div>';
             }
         }
         echo '</div>';
@@ -383,11 +383,12 @@ function tkmtb_render_grid_view($query, $table) {
         // Footer with button
         echo '<div class="tkmtb-grid-footer">';
         $btn_text = tkmtb_get_setting('button_text', 'View Details');
-        echo '<a href="' . get_permalink($post_id) . '" class="tkmtb-btn">' . esc_html($btn_text) . '</a>';
+        echo '<a href="' . get_permalink($post_id) . '" class="tkmtb-btn tkmtb-btn-light">' . esc_html($btn_text) . '</a>';
         echo '</div>';
 
-        echo '</div>'; // grid-body
         echo '</div>'; // grid-card
+
+        $index++;
     }
 
     echo '</div>';

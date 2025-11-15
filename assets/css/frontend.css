@@ -48,19 +48,21 @@
 .tkmtb-loading::after{content:'Loading...' !important;display:block !important;text-align:center !important;padding:20px !important;font-weight:600 !important}
 
 /* Grid View */
-.tkmtb-grid{display:grid !important;grid-template-columns:repeat(auto-fill,minmax(280px,1fr)) !important;gap:20px !important;margin:0 0 30px 0 !important}
-.tkmtb-grid-card{background:#fff !important;border:2px solid #e0d4ed !important;border-radius:12px !important;padding:0 !important;overflow:hidden !important;transition:all .2s !important;box-shadow:0 2px 8px rgba(0,0,0,.08) !important}
-.tkmtb-grid-card:hover{transform:translateY(-4px) !important;box-shadow:0 8px 24px rgba(0,0,0,.15) !important}
-.tkmtb-grid-header{height:120px !important;display:flex !important;align-items:center !important;justify-content:center !important;background:linear-gradient(135deg,#c92651,#a01d3f) !important;position:relative !important}
-.tkmtb-grid-header::after{content:attr(data-initial) !important;font-size:48px !important;font-weight:700 !important;color:#fff !important;text-transform:uppercase !important}
-.tkmtb-grid-body{padding:20px !important}
-.tkmtb-grid-title{margin:0 0 12px 0 !important;font-size:18px !important;font-weight:700 !important;color:#2c2c2c !important;line-height:1.3 !important}
-.tkmtb-grid-title a{color:#2c2c2c !important;text-decoration:none !important;transition:color .2s !important}
-.tkmtb-grid-title a:hover{color:var(--tkmtb-button-bg,#c92651) !important}
-.tkmtb-grid-meta{margin:0 0 16px 0 !important}
-.tkmtb-grid-meta-item{display:flex !important;align-items:center !important;margin:0 0 8px 0 !important;font-size:14px !important;color:#666 !important}
-.tkmtb-grid-meta-item strong{width:80px !important;color:#999 !important;font-weight:600 !important}
-.tkmtb-grid-footer{padding:16px 0 0 0 !important;border-top:2px solid #f0f0f0 !important}
+.tkmtb-grid{display:grid !important;grid-template-columns:repeat(auto-fill,minmax(320px,1fr)) !important;gap:24px !important;margin:0 0 30px 0 !important}
+.tkmtb-grid-card{border:3px solid rgba(255,255,255,.15) !important;border-radius:16px !important;padding:24px !important;overflow:hidden !important;transition:all .3s ease !important;box-shadow:0 4px 16px rgba(0,0,0,.12) !important;position:relative !important}
+.tkmtb-grid-card-dark1{background:linear-gradient(135deg,#2c3e50,#34495e) !important}
+.tkmtb-grid-card-dark2{background:linear-gradient(135deg,#8e44ad,#9b59b6) !important}
+.tkmtb-grid-card:hover{transform:translateY(-6px) !important;box-shadow:0 12px 32px rgba(0,0,0,.2) !important;border-color:rgba(255,255,255,.3) !important}
+.tkmtb-grid-title{margin:0 0 20px 0 !important;font-size:20px !important;font-weight:700 !important;color:#fff !important;line-height:1.4 !important;padding-bottom:16px !important;border-bottom:2px solid rgba(255,255,255,.2) !important}
+.tkmtb-grid-title a{color:#fff !important;text-decoration:none !important;transition:opacity .2s !important}
+.tkmtb-grid-title a:hover{opacity:.8 !important}
+.tkmtb-grid-meta{display:grid !important;grid-template-columns:repeat(2,1fr) !important;gap:16px !important;margin:0 0 20px 0 !important}
+.tkmtb-grid-meta-item{display:flex !important;flex-direction:column !important;gap:4px !important}
+.tkmtb-meta-label{font-size:12px !important;font-weight:600 !important;text-transform:uppercase !important;letter-spacing:.5px !important;color:rgba(255,255,255,.6) !important}
+.tkmtb-meta-value{font-size:15px !important;font-weight:600 !important;color:#fff !important}
+.tkmtb-grid-footer{padding:16px 0 0 0 !important;border-top:2px solid rgba(255,255,255,.2) !important;text-align:center !important}
+.tkmtb-btn-light{background:rgba(255,255,255,.9) !important;color:#2c3e50 !important;font-weight:700 !important;border:2px solid transparent !important}
+.tkmtb-btn-light:hover{background:#fff !important;border-color:rgba(255,255,255,.3) !important;transform:translateY(-2px) !important}
 
 /* Responsive */
 @media(max-width:768px){
@@ -69,6 +71,8 @@
 .tkmtb-table{font-size:14px !important}
 .tkmtb-table th,.tkmtb-table td{padding:10px !important}
 .tkmtb-img{width:50px !important;height:50px !important}
+.tkmtb-grid{grid-template-columns:1fr !important}
+.tkmtb-grid-meta{grid-template-columns:1fr !important}
 }
 
 /* RTL Support */
